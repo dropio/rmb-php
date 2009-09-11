@@ -1,21 +1,22 @@
 <?php
 
 /**
- * Enter description here...
+ * Abstract class that is extended to create helper data objects.
  *
  */
-Class Dropio_Data {
+
+Abstract Class Dropio_Data {
 
   var $loaded = false;
   var $values = Array();
 
   var $changed = Array();
 
-  var $primary_key     = 'name';
+  var $primary_key = 'name';
   var $dropio_api;
 
   /**
-   * Enter description here...
+   * Constructor with optional unique id. 
    *
    * @param string $uid
    */
@@ -26,15 +27,14 @@ Class Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Set object properties from an array.
    *
    * @param array $array
    * @return Dropio_Data
    */
   
   function loadFromArray( $array ) {
-    //$this->values = Array();
-
+    
     foreach ($array as $var=>$value) {
       $this->$var = $value;
     }
@@ -42,13 +42,12 @@ Class Dropio_Data {
     $this->loaded = true;
     $this->changed = Array();
 
-    //$this->values[$this->primary_key] = $value[$this->primary_key];
-
     return $this;
   }
 
   /**
-   * Enter description here...
+   * Instead using the magic __SET() function, this can be used in order to 
+   * facilitate chaining.  $obj->set('title', 'My Title')->set('name', 'Name)->..
    *
    * @param string $var
    * @param mixed $val
@@ -62,7 +61,7 @@ Class Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Magic method that returns the object's parameters.
    *
    * @param string $var
    * @return mixed
@@ -81,7 +80,7 @@ Class Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Magic __set method that is mapped to the set() method.
    *
    * @param string $var
    * @param mixed $value

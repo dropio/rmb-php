@@ -1,10 +1,32 @@
 <?php
 
+include 'Data.php';
+include 'Drop.php';
+include 'Manager.php';
+include 'Asset.php';
+include 'Drop/Subscription.php';
+include 'Asset/Comment.php';
+
 Class Dropio_Exception extends Exception {};
 Class Dropio_Api_Exception extends Dropio_Exception {};
 
 /**
- * Enter description here...
+ * Dropio_Api is a client for the Dropio API and the basis for all the other 
+ * helper classes.
+ * 
+ * This can be used to access all the functionality of the API.  
+ * 
+ * If an error is returned from the API, a Dropio_Api_Exception is thrown.
+ * 
+ * Example to get details on a drop.
+ * 
+ * try {
+ *  $api = new Dropio_Api(API_KEY);
+ *  $response = $api->request('GET', '/drops/php_api_lib');
+ *  print_r($response);
+ * } catch (Dropio_Api_Exception $e) {
+ *  die("Error:" . $e->getMessage());
+ * }
  *
  */
 
@@ -20,7 +42,8 @@ Class Dropio_Api {
   const UPLOAD_URL = 'http://assets.drop.io/upload';
 
   /**
-	 * Enter description here...
+	 * instantiates a new Dropio_Api object.  The api_key is optional, if not set
+	 * it uses the global api_key set by: Dropio_Api::setKey(API_KEY);
 	 *
 	 * @param string $api_key
 	 */
@@ -39,7 +62,11 @@ Class Dropio_Api {
   }
 
   /**
-	 * Enter description here...
+	 * Factory method to allow simple chaining.
+	 * 
+	 * Example:
+	 * 
+	 * $response = Dropio_Api::factory()-request('GET', '/drops/php_api_lib');
 	 *
 	 * @param string $api_key
 	 * @return Dropio_Api
@@ -54,7 +81,7 @@ Class Dropio_Api {
   }
 
   /**
-	 * Enter description here...
+	 * Sets the global api_key.
 	 *
 	 * @param string $api_key
 	 */
@@ -64,7 +91,7 @@ Class Dropio_Api {
   }
 
   /**
-	 * Enter description here...
+	 * Executes a request to Drop.io's API servers.  
 	 *
 	 * @param string $method
 	 * @param string $path
@@ -87,7 +114,7 @@ Class Dropio_Api {
       case 'POST':
         curl_setopt($ch, CURLOPT_POST, 1);
 
-        //For some reason, this needs to be a string instead of an array. No clue why.
+        //For some reason, this needs to be a string instead of an array.
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
         break;
       case 'DELETE':
@@ -126,14 +153,21 @@ Class Dropio_Api {
     is_array( $data = @json_decode( $result, true))
     ) {
 
-      if (isset($data['response']['result']) && $data['response']['result'] == 'Failure') {
+      if (
+      isset($data['response']['result'])
+      &&
+      $data['response']['result'] == 'Failure'
+      ) {
         throw new Dropio_Api_Exception ($data['response']['message']);
       }
 
       return $data;
     }
 
-    throw new Dropio_Api_Exception( 'Received error code from web server:' . $http_response_code, $http_response_code);
+    throw new Dropio_Api_Exception(
+    'Received error code from web server:' . $http_response_code,
+    $http_response_code
+    );
 
   }
 
