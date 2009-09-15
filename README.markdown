@@ -22,6 +22,6 @@ Create a drop and add an asset.
   
 Add an asset to a pre-existing drop.
   
-	$drop = new Dropio_Drop::load(DROP_NAME);
+	$drop = Dropio_Drop::load(DROP_NAME);
 	#drop->addFile(PATH_TO_FILE);
   
