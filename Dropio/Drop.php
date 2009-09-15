@@ -326,6 +326,7 @@ Class Dropio_Drop extends Dropio_Data {
     
   }
 
+ 
   /**
    * Enter description here...
    *
@@ -360,6 +361,22 @@ Class Dropio_Drop extends Dropio_Data {
     return "http://drop.io/{$this->name}/from_api/?version=2.0&signature=${signature}&expires=${expires}";
 
   }
+  
+  /**
+   * Returns a HTML for a file uploader.
+   *
+   * @return unknown
+   */
+ function getEmbedCode () {
+    
+    $result = $this->dropio_api->request('GET','drops/' . $this->name . '/upload_code',
+    Array('token'=>$this->token())
+    );
+
+    return $result['upload_code'];
+    
+  }
+  
 
 
 }
