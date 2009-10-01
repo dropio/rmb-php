@@ -123,7 +123,7 @@ Class Dropio_Asset extends Dropio_Data {
 	
 	function addComment ( $comment_text ) {
 		
-		$comment = new Dropio_Asset_Comment (&$this);
+		$comment = new Dropio_Asset_Comment ($this);
 		$comment->contents = $comment_text;
 		
 		return $comment->save();
