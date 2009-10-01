@@ -3,8 +3,18 @@
 Class Dropio_Drop_Exception extends Dropio_Exception{};
 
 /**
- * Enter description here...
- *
+ * Dropio_Drop is used to access all functionality related to a Drop.  Most 
+ * methods are chainable, allowing for the the creation of a drop to happen
+ * inline.  
+ * 
+ * For example, to create a drop and to access it.
+ * 
+ * $drop = Dropio_Drop::factory('dropname')->save();
+ * 
+ * To load a pre-existing drop and load:
+ * 
+ * $drop = Dropio_Drop::load('dropname');
+ * 
  */
 
 Class Dropio_Drop extends Dropio_Data {
@@ -13,21 +23,23 @@ Class Dropio_Drop extends Dropio_Data {
   var $token = null;
 
   /**
-   * Enter description here...
+   * Standard constructor.  $drop_name can be set to either later load or 
+   * create a new drop.
    *
    * @param string $name
    * @param string $token
    */
   
-  function __construct ( $name = null, $token = null ) {
+  function __construct ( $drop_name = null, $token = null ) {
     $this->dropio_api = new Dropio_Api();
-    $this->values[$this->primary_key] = $name;
+    $this->values[$this->primary_key] = $drop_name;
     $this->token = $token;
   }
 
   /**
-   * Enter description here...
-   *
+   * Factory method that allows for chaining such as:
+   * $asset = Drop_Dropio::factory()->save()->addFile('/tmp/file');
+   * 
    * @param string $name
    * @param string $token
    * @return Dropio_Drop
@@ -39,7 +51,7 @@ Class Dropio_Drop extends Dropio_Data {
   
   
   /**
-   * Enter description here...
+   * Loads a drop.  This makes an immediate API call for all drop details.
    *
    * @param string $name
    * @param string $token
@@ -164,12 +176,17 @@ Class Dropio_Drop extends Dropio_Data {
    * @return Dropio_Drop
    */
 
-  function assets ( $page = 1) {
+  function assets ( $page = 1, $order = 'oldest') {
 
+    if (!in_array($order, Array('oldest', 'latest'))){
+      throw new Dropio_Drop_Exception('Invalid value for order, must be either: oldest or latest');
+    }
+    
     $result = $this->dropio_api->request('GET', 'drops/' . $this->name . '/assets',
     Array(
       'page'=>$page, 
-      'token'=>$this->token()
+      'token'=>$this->token(),
+      'order'=>$order
     )
     );
 

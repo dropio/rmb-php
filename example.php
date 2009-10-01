@@ -15,8 +15,8 @@ Dropio_Api::setKey(API_KEY);
 
 Dropio_Drop::load('php_api_lib')->addNote('This is an example of the Drop.io PHP Library','Hello World');
 
-//Uncomment this line to upload this php file. Whoa, how meta.
-//Dropio_Drop::load('php_api_lib')->addFile($_SERVER["SCRIPT_NAME"]);
+//Below is an example of a one line uploade to a drop.
+//Dropio_Drop::load('php_api_lib')->addFile(FILE_NAME);
 
 
 // Using the Dropio_Api() class directly
