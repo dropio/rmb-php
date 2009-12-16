@@ -23,14 +23,31 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
     $this->values[$this->primary_key] = $subscription_id;
 
   }
-  
-  static function factory ( Dropio_Drop &$drop, $subscription_id = null ) {
-    
+
+  static function instance ( Dropio_Drop &$drop, $subscription_id = null ) {
+
     $subscription = new Dropio_Drop_Subscription($drop, $subscription_id);
     return $subscription;
-    
+
   }
+
+  /**
+   * Enter description here...
+   *
+   * @param unknown_type $array
+   * @return unknown
+   */
   
+  function loadFromArray( $array ) {
+
+    if ($array['type'] == 'pingback') {
+      $array['url'] = $array['username'];
+    }
+    
+    return parent::loadFromArray($array);
+  }
+
+
   /**
 	 * Enter description here...
 	 *
@@ -77,18 +94,13 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
 
     $this->values['token'] = $this->drop->token();
 
-    $result = $this->drop->dropio_api->request('POST', 'drops/' . $this->drop->name . '/subscriptions', $this->values);
+    $result = $this->drop->dropio_api->request(
+    'POST',
+    'drops/' . $this->drop->name . '/subscriptions',
+    $this->values
+    );
 
-    //Result will be an array of subscriptions;
-
-    $out = Array();
-
-    foreach ($result as $sub_array) {
-      $subscription = new Dropio_Drop_Subscription( $this->drop );
-      $out[] = $subscription->loadFromArray($sub_array);
-    }
-
-    return $out;
+    return Dropio_Drop_Subscription::instance($this->drop)->loadFromArray($result);
 
   }
 

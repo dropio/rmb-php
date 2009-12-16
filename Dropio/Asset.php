@@ -29,7 +29,7 @@ Class Dropio_Asset extends Dropio_Data {
   }
   
   /**
-   * Enter description here...
+   * Deletes the asset.
    *
    * @return Dropio_Asset
    */
@@ -52,12 +52,12 @@ Class Dropio_Asset extends Dropio_Data {
    * @return Dropio_Asset
    */
   
-	static function factory () {
+	static function instance () {
 		return new Dropio_Asset();
 	}
 	
 	/**
-	 * Enter description here...
+	 * Return the embed code for an asset.
 	 *
 	 * @return string
 	 */
@@ -72,8 +72,8 @@ Class Dropio_Asset extends Dropio_Data {
 		
 	}
 	
-	/**
-	 * Enter description here...
+	/** 
+	 * Copies an asset to another drop.
 	 *
 	 * @param string $drop_name
 	 * @param string $drop_token
@@ -94,7 +94,7 @@ Class Dropio_Asset extends Dropio_Data {
 	}
 	
 	/**
-	 * Enter description here...
+	 * Move an asset to another drop.
 	 *
 	 * @param string $drop_name
 	 * @param string $drop_token
@@ -115,7 +115,7 @@ Class Dropio_Asset extends Dropio_Data {
 	}
 	
 	/**
-	 * Enter description here...
+	 * Add comment to an asset.
 	 *
 	 * @param string $comment_text
 	 * @return Dropio_Asset_Comment
@@ -130,8 +130,39 @@ Class Dropio_Asset extends Dropio_Data {
 		
 	}
 	
+	
+  /**
+   * Returns a Dropio_Asset_Comment_Set of comments.
+   *
+   * @param integer $page
+   * @return Dropio_Drop
+   */
+
+  function getComments ( $page = 1) {
+
+    $result = $this->dropio_api->request('GET', 'drops/' . $this->drop->name . '/assets/' . $this->values[$this->primary_key] . '/comments',
+    Array(
+    'page'=>$page,
+    'token'=>$this->drop->token(),
+    'order'=>$order
+    )
+    );
+    
+    $comments = Array();
+   
+    foreach ( $result['comments'] as $comment_array) {
+      $comment = new Dropio_Asset_Comment($this);
+      $comments[ $comment_array['id'] ] = $comment->loadFromArray($comment_array);
+    }
+
+    return new Dropio_Asset_Comment_Set($comments,$result['total'], $result['page'], $result['per_page'], 'id');
+
+  }
+  
+  
+	
 	/**
-	 * Enter description here...
+	 * Send an asset to a fax.
 	 *
 	 * @param string $fax_number
 	 * @return Dropio_Asset
@@ -153,7 +184,7 @@ Class Dropio_Asset extends Dropio_Data {
 	}
 	
 	/**
-	 * Enter description here...
+	 * Send an asset as an email
 	 *
 	 * @param string $emails
 	 * @param string $message

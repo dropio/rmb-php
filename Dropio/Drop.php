@@ -9,7 +9,7 @@ Class Dropio_Drop_Exception extends Dropio_Exception{};
  * 
  * For example, to create a drop and to access it.
  * 
- * $drop = Dropio_Drop::factory('dropname')->save();
+ * $drop = Dropio_Drop::instance('dropname')->save();
  * 
  * To load a pre-existing drop and load:
  * 
@@ -29,7 +29,7 @@ Class Dropio_Drop extends Dropio_Data {
    * @param string $name
    * @param string $token
    */
-  
+
   function __construct ( $drop_name = null, $token = null ) {
     $this->dropio_api = new Dropio_Api();
     $this->values[$this->primary_key] = $drop_name;
@@ -37,19 +37,19 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Factory method that allows for chaining such as:
-   * $asset = Drop_Dropio::factory()->save()->addFile('/tmp/file');
+   * Instance method that allows for chaining such as:
+   * $asset = Drop_Dropio::instance()->save()->addFile('/tmp/file');
    * 
    * @param string $name
    * @param string $token
    * @return Dropio_Drop
    */
-  
-  static function factory ( $name = null, $token = null ) {
+
+  static function instance ( $name = null, $token = null ) {
     return new Dropio_Drop ( $name, $token );
   }
-  
-  
+
+
   /**
    * Loads a drop.  This makes an immediate API call for all drop details.
    *
@@ -57,7 +57,7 @@ Class Dropio_Drop extends Dropio_Data {
    * @param string $token
    * @return Dropio_Drop
    */
-  
+
   static function load ( $name, $token = null ) {
     $drop = new Dropio_Drop ( $name, $token );
     return $drop->_load($name, $token);
@@ -70,7 +70,7 @@ Class Dropio_Drop extends Dropio_Data {
    * @param string $token
    * @return Dropio_Drop
    */
-  
+
   function _load ( $name = null, $token = null ) {
 
     if (!strlen($name) && isset($this->values[$this->primary_key])) {
@@ -116,11 +116,11 @@ Class Dropio_Drop extends Dropio_Data {
    *
    * @return Dropio_Drop
    */
-  
+
   function save () {
 
     if (!$this->loaded) {
-      
+
       //We'll create a new one.
       $result = $this->dropio_api->request('POST', 'drops', $this->values);
 
@@ -156,6 +156,13 @@ Class Dropio_Drop extends Dropio_Data {
 
   }
 
+  /**
+   * Retrieves a single asset by it's name.
+   *
+   * @param unknown_type $asset_name
+   * @return unknown
+   */
+
   function getAsset ( $asset_name ) {
 
     $asset_array = $this->dropio_api->request('GET', 'drops/' . $this->name . '/assets/' . $asset_name,
@@ -170,46 +177,77 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Returns a Dropio_Asset_Set of assets.
    *
    * @param integer $page
    * @return Dropio_Drop
    */
 
-  function assets ( $page = 1, $order = 'oldest') {
+  function getAssets ( $page = 1, $order = 'oldest') {
 
     if (!in_array($order, Array('oldest', 'latest'))){
       throw new Dropio_Drop_Exception('Invalid value for order, must be either: oldest or latest');
     }
-    
+
     $result = $this->dropio_api->request('GET', 'drops/' . $this->name . '/assets',
     Array(
-      'page'=>$page, 
-      'token'=>$this->token(),
-      'order'=>$order
+    'page'=>$page,
+    'token'=>$this->token(),
+    'order'=>$order
     )
     );
 
-    $out = Array();
-    foreach ( $result as $asset_array) {
+    $assets = Array();
+
+    foreach ( $result['assets'] as $asset_array) {
       $asset = new Dropio_Asset();
       $asset->drop = $this;
 
-      $out[ $asset_array['name'] ] = $asset->loadFromArray($asset_array);
+      $assets[ $asset_array['name'] ] = $asset->loadFromArray($asset_array);
     }
 
-    return $out;
+    return new Dropio_Asset_Set($assets,$result['total'], $result['page'], $result['per_page'], 'name');
 
   }
 
+  
   /**
-   * Enter description here...
+   * Returns a Dropio_Asset_Set of assets.
+   *
+   * @param integer $page
+   * @return Dropio_Drop
+   */
+
+  function getSubscriptions ( $page = 1) {
+
+    $result = $this->dropio_api->request('GET', 'drops/' . $this->name . '/subscriptions',
+    Array(
+    'page'=>$page,
+    'token'=>$this->token(),
+    'order'=>$order
+    )
+    );
+
+    $subscriptions = Array();
+
+    foreach ( $result['subscriptions'] as $subscription_array) {
+      $subscription = new Dropio_Drop_Subscription($this);
+      $subscriptions[ $subscription_array['id'] ] = $subscription->loadFromArray($subscription_array);
+    }
+
+    return new Dropio_Drop_Subscription_Set($subscriptions,$result['total'], $result['page'], $result['per_page'], 'id');
+
+  }
+
+
+  /**
+   * Creates a note asset with $contents as the content. 
    *
    * @param string $contents
    * @param string $title
    * @return Dropio_Asset
    */
-  
+
   function addNote ( $contents, $title = null ) {
 
     $response = $this->dropio_api->request('POST','drops/' . $this->name . '/assets',
@@ -223,13 +261,13 @@ Class Dropio_Drop extends Dropio_Data {
 
     $asset       = new Dropio_Asset();
     $asset->drop = $this;
-    
+
     return $asset->loadFromArray($response);
 
   }
 
   /**
-   * Enter description here...
+   * Creates a link asset
    *
    * @param string $url
    * @param string $title
@@ -256,14 +294,14 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Create an asset from a remote file.
    *
    * @param string $file_url
    * @return Dropio_Asset
    */
-  
+
   function addFileUrl ( $file_url ) {
-    
+
     $response = $this->dropio_api->request('POST','drops/' . $this->name . '/assets',
     Array(
     'drop_name'		=> $this->name,
@@ -274,19 +312,19 @@ Class Dropio_Drop extends Dropio_Data {
 
     $asset       = new Dropio_Asset();
     $asset->drop = $this;
-    
+
     return $asset->loadFromArray($response);
 
   }
 
 
   /**
-   * Enter description here...
+   * Create an asset from a local file.
    *
    * @param string $file
    * @return Dropio_Asset
    */
-  
+
   function addFile ( $file ) {
 
     if (!$this->loaded) {
@@ -296,7 +334,7 @@ Class Dropio_Drop extends Dropio_Data {
     if (!file_exists($file)) {
       throw new Dropio_Drop_Exception('File does not exist: ' . $file);
     }
-    
+
     $response = $this->dropio_api->request('UPLOAD',null,
     Array(
     'drop_name' => $this->name,
@@ -312,11 +350,11 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Delete a drop and all it's contents.
    *
    * @return Dropio_Drop
    */
-  
+
   function delete() {
 
     $result = $this->dropio_api->request('DELETE','drops/' . $this->name,
@@ -328,7 +366,7 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Delete all assets from a drop
    *
    * @return Dropio_Drop
    */
@@ -340,17 +378,17 @@ Class Dropio_Drop extends Dropio_Data {
     );
 
     return $this;
-    
+
   }
 
- 
+
   /**
-   * Enter description here...
+   * Promote a nick to moderator.
    *
    * @param string $nick
    * @return array
    */
-  
+
   function promoteNick ( $nick ) {
 
     return $this->dropio_api->request('POST','drops/' . $this->name . '/promote',
@@ -363,7 +401,7 @@ Class Dropio_Drop extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Generates a redirect url to automatically authenticate a user.
    *
    * @param integer $expires_in
    * @return string
@@ -378,22 +416,23 @@ Class Dropio_Drop extends Dropio_Data {
     return "http://drop.io/{$this->name}/from_api/?version=2.0&signature=${signature}&expires=${expires}";
 
   }
-  
+
   /**
    * Returns a HTML for a file uploader.
    *
    * @return unknown
    */
- function getEmbedCode () {
-    
+
+  function getEmbedCode () {
+
     $result = $this->dropio_api->request('GET','drops/' . $this->name . '/upload_code',
     Array('token'=>$this->token())
     );
 
     return $result['upload_code'];
-    
+
   }
-  
+
 
 
 }

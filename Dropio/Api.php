@@ -1,11 +1,20 @@
 <?php
 
 include 'Data.php';
+include 'Set.php';
 include 'Drop.php';
+include 'Drop/Set.php';
 include 'Manager.php';
 include 'Asset.php';
 include 'Drop/Subscription.php';
+include 'Drop/Subscription/Set.php';
+include 'Asset/Set.php';
 include 'Asset/Comment.php';
+include 'Asset/Comment/Set.php';
+
+if (!extension_loaded('curl')) {
+  throw new Dropio_Exception('This library requires the Curl extension.  Read more: http://php.net/manual/en/book.curl.php');
+} 
 
 Class Dropio_Exception extends Exception {};
 Class Dropio_Api_Exception extends Dropio_Exception {};
@@ -38,8 +47,12 @@ Class Dropio_Api {
   protected $api_key     = null;
   static $global_api_key = null;
 
-  const API_URL    = 'http://api.drop.io';
-  const UPLOAD_URL = 'http://assets.drop.io/upload';
+  static $use_https      = false;
+	static $api_url        = null;
+  const API_HTTP_URL     = 'http://api.drop.io';
+  const API_HTTPS_URL    = 'http://api.drop.io';
+	const CLIENT_VER       = '1.0';
+  const UPLOAD_URL       = 'http://assets.drop.io/upload';
 
   /**
 	 * instantiates a new Dropio_Api object.  The api_key is optional, if not set
@@ -62,17 +75,17 @@ Class Dropio_Api {
   }
 
   /**
-	 * Factory method to allow simple chaining.
+	 * Instance method to allow simple chaining.
 	 * 
 	 * Example:
 	 * 
-	 * $response = Dropio_Api::factory()-request('GET', '/drops/php_api_lib');
+	 * $response = Dropio_Api::instance()->request('GET', '/drops/php_api_lib');
 	 *
 	 * @param string $api_key
 	 * @return Dropio_Api
 	 */
 
-  static function factory ( $api_key = null ) {
+  static function instance ( $api_key = null ) {
     if (empty($api_key)) {
       $api_key = self::$global_api_key;
     }
@@ -90,6 +103,17 @@ Class Dropio_Api {
     self::$global_api_key = $api_key;
   }
 
+
+  /**
+	 * Sets the global api_key.
+	 *
+	 * @param string $api_key
+	 */
+	
+	static function setApiUrl( $url ) {
+		self::$api_url = $url;
+	}
+	
   /**
 	 * Executes a request to Drop.io's API servers.  
 	 *
@@ -106,9 +130,16 @@ Class Dropio_Api {
 
     $params['api_key'] = $this->api_key;
 
-    $url =  self::API_URL . '/' . $path;
+		$api_url  = empty(self::$api_url)?(self::$use_https?self::API_HTTPS_URL:self::API_HTTP_URL):self::$api_url;
+    $url      =  $api_url . '/' . $path;
 
     $ch = curl_init();
+
+		/**
+		*  Setting the user agent, useful for debugging and allowing us to check which version
+		**/
+		
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Drop.io PHP client v' . self::CLIENT_VER);
 
     switch($method){
       case 'POST':
@@ -138,6 +169,9 @@ Class Dropio_Api {
         break;
     }
 
+    //echo $url;print_r($params); echo "\n";
+    
+    
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 

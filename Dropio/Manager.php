@@ -31,7 +31,7 @@ Class Dropio_Manager {
    * @return Dropio_Manager
    */
   
-  static function factory ( $manager_token = null ) {
+  static function instance ( $manager_token = null ) {
     return new Dropio_Manager($manager_token);
   }
 
