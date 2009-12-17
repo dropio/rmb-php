@@ -22,9 +22,10 @@
 					</div>
 	<div class="info-box-body">
         		<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Dropio_Drop is used to access all functionality related to a Drop.  Most  methods are chainable, allowing for the the creation of a drop to happen  inline.</p>
+<p class="description"><p>For example, to create a drop and to access it.</p><p>$drop = Dropio_Drop::instance('dropname')-&gt;save();</p><p>To load a pre-existing drop and load:</p><p>$drop = Dropio_Drop::load('dropname');</p></p>
 		<p class="notes">
-			Located in <a class="field" href="_Drop.php.html">/Drop.php</a> (line <span class="field"><a href="../__filesource/fsource_default__Drop.php.html#a10">10</a></span>)
+			Located in <a class="field" href="_Drop.php.html">/Drop.php</a> (line <span class="field">20</span>)
 		</p>
 		
 				
@@ -73,12 +74,12 @@
 		</div>
 		<div class="info-box-body">			
 			<div class="method-summary">
-																																																																												<div class="method-definition">
+																																																																																																												<div class="method-definition">
 					static 						<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
-										<a href="#factory" title="details" class="method-name">factory</a>
+										<a href="#instance" title="details" class="method-name">instance</a>
 											([<span class="var-type">string</span>&nbsp;<span class="var-name">$name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>])
 									</div>
-																																<div class="method-definition">
+																<div class="method-definition">
 					static 						<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
 										<a href="#load" title="details" class="method-name">load</a>
 											(<span class="var-type">string</span>&nbsp;<span class="var-name">$name</span>, [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>])
@@ -87,7 +88,7 @@
 												<div class="method-definition">
 											<span class="method-result">Dropio_Drop</span>
 										<a href="#__construct" title="details" class="method-name">__construct</a>
-											([<span class="var-type">string</span>&nbsp;<span class="var-name">$name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>])
+											([<span class="var-type"></span>&nbsp;<span class="var-name">$drop_name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>], <span class="var-type">string</span>&nbsp;<span class="var-name">$name</span>)
 									</div>
 																<div class="method-definition">
 											<span class="method-result"><a href="../default/Dropio_Asset.html">Dropio_Asset</a></span>
@@ -111,11 +112,6 @@
 									</div>
 																<div class="method-definition">
 											<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
-										<a href="#assets" title="details" class="method-name">assets</a>
-											([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>])
-									</div>
-																<div class="method-definition">
-											<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
 										<a href="#delete" title="details" class="method-name">delete</a>
 										()
 									</div>
@@ -124,17 +120,32 @@
 										<a href="#emptyAssets" title="details" class="method-name">emptyAssets</a>
 										()
 									</div>
-																								<div class="method-definition">
-											<span class="method-result">void</span>
+																<div class="method-definition">
+											<span class="method-result">unknown</span>
 										<a href="#getAsset" title="details" class="method-name">getAsset</a>
-											(<span class="var-type"></span>&nbsp;<span class="var-name">$asset_name</span>)
+											(<span class="var-type">unknown_type</span>&nbsp;<span class="var-name">$asset_name</span>)
+									</div>
+																<div class="method-definition">
+											<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
+										<a href="#getAssets" title="details" class="method-name">getAssets</a>
+											([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>], [<span class="var-type"></span>&nbsp;<span class="var-name">$order</span> = <span class="var-default">'oldest'</span>])
+									</div>
+																<div class="method-definition">
+											<span class="method-result">unknown</span>
+										<a href="#getEmbedCode" title="details" class="method-name">getEmbedCode</a>
+										()
 									</div>
 																<div class="method-definition">
 											<span class="method-result">string</span>
 										<a href="#getRedirectUrl" title="details" class="method-name">getRedirectUrl</a>
 											([<span class="var-type">integer</span>&nbsp;<span class="var-name">$expires_in</span> = <span class="var-default">900</span>])
 									</div>
-																								<div class="method-definition">
+																<div class="method-definition">
+											<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
+										<a href="#getSubscriptions" title="details" class="method-name">getSubscriptions</a>
+											([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>])
+									</div>
+																																<div class="method-definition">
 											<span class="method-result">array</span>
 										<a href="#promoteNick" title="details" class="method-name">promoteNick</a>
 											(<span class="var-type">string</span>&nbsp;<span class="var-name">$nick</span>)
@@ -172,13 +183,13 @@
 					</div>
 		<div class="info-box-body">
 			<a name="var$dropio_api" id="$dropio_api"><!-- --></A>
-<div class="evenrow">
+<div class="oddrow">
 
 	<div class="var-header">
 		<span class="var-title">
 			<span class="var-type">mixed</span>
 			<span class="var-name">$dropio_api</span>
-			 = <span class="var-default"> null</span>			(line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a12">12</a></span>)
+			 = <span class="var-default"> null</span>			(line <span class="line-number">22</span>)
 		</span>
 	</div>
 
@@ -195,13 +206,13 @@
 
 </div>
 <a name="var$token" id="$token"><!-- --></A>
-<div class="oddrow">
+<div class="evenrow">
 
 	<div class="var-header">
 		<span class="var-title">
 			<span class="var-type">mixed</span>
 			<span class="var-name">$token</span>
-			 = <span class="var-default"> null</span>			(line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a13">13</a></span>)
+			 = <span class="var-default"> null</span>			(line <span class="line-number">23</span>)
 		</span>
 	</div>
 
@@ -244,21 +255,21 @@
 		</div>
 		<div class="info-box-body">
 			<A NAME='method_detail'></A>
-<a name="methodfactory" id="factory"><!-- --></a>
-<div class="evenrow">
+<a name="methodinstance" id="instance"><!-- --></a>
+<div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">static method factory</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a36">36</a></span>)
+		<span class="method-title">static method instance</span> (line <span class="line-number">48</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Instance method that allows for chaining such as:  $asset = Drop_Dropio::instance()-&gt;save()-&gt;addFile('/tmp/file');</p>
 	
 	<div class="method-signature">
 	    static
 		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
 		<span class="method-name">
-			factory
+			instance
 		</span>
 					([<span class="var-type">string</span>&nbsp;<span class="var-name">$name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>])
 			</div>
@@ -275,14 +286,14 @@
 			
 	</div>
 <a name="methodload" id="load"><!-- --></a>
-<div class="oddrow">
+<div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">static method load</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a49">49</a></span>)
+		<span class="method-title">static method load</span> (line <span class="line-number">61</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Loads a drop.  This makes an immediate API call for all drop details.</p>
 	
 	<div class="method-signature">
 	    static
@@ -306,21 +317,21 @@
 	</div>
 
 <a name="method__construct" id="__construct"><!-- --></a>
-<div class="evenrow">
+<div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">Constructor __construct</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a22">22</a></span>)
+		<span class="method-title">Constructor __construct</span> (line <span class="line-number">33</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Standard constructor.  $drop_name can be set to either later load or  create a new drop.</p>
 	
 	<div class="method-signature">
 		<span class="method-result">Dropio_Drop</span>
 		<span class="method-name">
 			__construct
 		</span>
-					([<span class="var-type">string</span>&nbsp;<span class="var-name">$name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>])
+					([<span class="var-type"></span>&nbsp;<span class="var-name">$drop_name</span> = <span class="var-default">null</span>], [<span class="var-type">string</span>&nbsp;<span class="var-name">$token</span> = <span class="var-default">null</span>], <span class="var-type">string</span>&nbsp;<span class="var-name">$name</span>)
 			</div>
 	
 			<ul class="parameters">
@@ -330,6 +341,9 @@
 					<li>
 				<span class="var-type">string</span>
 				<span class="var-name">$token</span>			</li>
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$drop_name</span>			</li>
 				</ul>
 		
 			<hr class="separator" />
@@ -341,14 +355,14 @@
 			
 	</div>
 <a name="methodaddFile" id="addFile"><!-- --></a>
-<div class="oddrow">
+<div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">addFile</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a273">273</a></span>)
+		<span class="method-title">addFile</span> (line <span class="line-number">328</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Create an asset from a local file.</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Asset.html">Dropio_Asset</a></span>
@@ -367,14 +381,14 @@
 			
 	</div>
 <a name="methodaddFileUrl" id="addFileUrl"><!-- --></a>
-<div class="evenrow">
+<div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">addFileUrl</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a248">248</a></span>)
+		<span class="method-title">addFileUrl</span> (line <span class="line-number">303</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Create an asset from a remote file.</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Asset.html">Dropio_Asset</a></span>
@@ -393,14 +407,14 @@
 			
 	</div>
 <a name="methodaddLink" id="addLink"><!-- --></a>
-<div class="oddrow">
+<div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">addLink</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a223">223</a></span>)
+		<span class="method-title">addLink</span> (line <span class="line-number">278</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Creates a link asset</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Asset.html">Dropio_Asset</a></span>
@@ -425,14 +439,14 @@
 			
 	</div>
 <a name="methodaddNote" id="addNote"><!-- --></a>
-<div class="evenrow">
+<div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">addNote</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a196">196</a></span>)
+		<span class="method-title">addNote</span> (line <span class="line-number">251</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Creates a note asset with $contents as the content.</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Asset.html">Dropio_Asset</a></span>
@@ -453,41 +467,15 @@
 		
 			
 	</div>
-<a name="methodassets" id="assets"><!-- --></a>
-<div class="oddrow">
-	
-	<div class="method-header">
-		<span class="method-title">assets</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a167">167</a></span>)
-	</div> 
-	
-	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
-	
-	<div class="method-signature">
-		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
-		<span class="method-name">
-			assets
-		</span>
-					([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>])
-			</div>
-	
-			<ul class="parameters">
-					<li>
-				<span class="var-type">integer</span>
-				<span class="var-name">$page</span>			</li>
-				</ul>
-		
-			
-	</div>
 <a name="methoddelete" id="delete"><!-- --></a>
 <div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">delete</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a303">303</a></span>)
+		<span class="method-title">delete</span> (line <span class="line-number">358</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Delete a drop and all it's contents.</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
@@ -504,11 +492,11 @@
 <div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">emptyAssets</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a319">319</a></span>)
+		<span class="method-title">emptyAssets</span> (line <span class="line-number">374</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Delete all assets from a drop</p>
 	
 	<div class="method-signature">
 		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
@@ -525,24 +513,75 @@
 <div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">getAsset</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a147">147</a></span>)
+		<span class="method-title">getAsset</span> (line <span class="line-number">166</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Retrieves a single asset by it's name.</p>
 	
 	<div class="method-signature">
-		<span class="method-result">void</span>
+		<span class="method-result">unknown</span>
 		<span class="method-name">
 			getAsset
 		</span>
-					(<span class="var-type"></span>&nbsp;<span class="var-name">$asset_name</span>)
+					(<span class="var-type">unknown_type</span>&nbsp;<span class="var-name">$asset_name</span>)
 			</div>
 	
 			<ul class="parameters">
 					<li>
-				<span class="var-type"></span>
+				<span class="var-type">unknown_type</span>
 				<span class="var-name">$asset_name</span>			</li>
 				</ul>
+		
+			
+	</div>
+<a name="methodgetAssets" id="getAssets"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<span class="method-title">getAssets</span> (line <span class="line-number">186</span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Returns a Dropio_Asset_Set of assets.</p>
+	
+	<div class="method-signature">
+		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
+		<span class="method-name">
+			getAssets
+		</span>
+					([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>], [<span class="var-type"></span>&nbsp;<span class="var-name">$order</span> = <span class="var-default">'oldest'</span>])
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type">integer</span>
+				<span class="var-name">$page</span>			</li>
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$order</span>			</li>
+				</ul>
+		
+			
+	</div>
+<a name="methodgetEmbedCode" id="getEmbedCode"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<span class="method-title">getEmbedCode</span> (line <span class="line-number">426</span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Returns a HTML for a file uploader.</p>
+	
+	<div class="method-signature">
+		<span class="method-result">unknown</span>
+		<span class="method-name">
+			getEmbedCode
+		</span>
+				()
+			</div>
+	
 		
 			
 	</div>
@@ -550,11 +589,11 @@
 <div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">getRedirectUrl</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a354">354</a></span>)
+		<span class="method-title">getRedirectUrl</span> (line <span class="line-number">410</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Generates a redirect url to automatically authenticate a user.</p>
 	
 	<div class="method-signature">
 		<span class="method-result">string</span>
@@ -572,15 +611,41 @@
 		
 			
 	</div>
-<a name="methodpromoteNick" id="promoteNick"><!-- --></a>
+<a name="methodgetSubscriptions" id="getSubscriptions"><!-- --></a>
 <div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">promoteNick</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a336">336</a></span>)
+		<span class="method-title">getSubscriptions</span> (line <span class="line-number">221</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
-<p class="short-description">Enter description here...</p>
+<p class="short-description">Returns a Dropio_Asset_Set of assets.</p>
+	
+	<div class="method-signature">
+		<span class="method-result"><a href="../default/Dropio_Drop.html">Dropio_Drop</a></span>
+		<span class="method-name">
+			getSubscriptions
+		</span>
+					([<span class="var-type">integer</span>&nbsp;<span class="var-name">$page</span> = <span class="var-default">1</span>])
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type">integer</span>
+				<span class="var-name">$page</span>			</li>
+				</ul>
+		
+			
+	</div>
+<a name="methodpromoteNick" id="promoteNick"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<span class="method-title">promoteNick</span> (line <span class="line-number">392</span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Promote a nick to moderator.</p>
 	
 	<div class="method-signature">
 		<span class="method-result">array</span>
@@ -599,10 +664,10 @@
 			
 	</div>
 <a name="methodsave" id="save"><!-- --></a>
-<div class="oddrow">
+<div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">save</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a108">108</a></span>)
+		<span class="method-title">save</span> (line <span class="line-number">120</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
@@ -620,10 +685,10 @@
 			
 	</div>
 <a name="methodtoken" id="token"><!-- --></a>
-<div class="evenrow">
+<div class="oddrow">
 	
 	<div class="method-header">
-		<span class="method-title">token</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a85">85</a></span>)
+		<span class="method-title">token</span> (line <span class="line-number">97</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
@@ -640,10 +705,10 @@
 			
 	</div>
 <a name="method_load" id="_load"><!-- --></a>
-<div class="oddrow">
+<div class="evenrow">
 	
 	<div class="method-header">
-		<span class="method-title">_load</span> (line <span class="line-number"><a href="../__filesource/fsource_default__Drop.php.html#a62">62</a></span>)
+		<span class="method-title">_load</span> (line <span class="line-number">74</span>)
 	</div> 
 	
 	<!-- ========== Info from phpDoc block ========= -->
@@ -685,7 +750,7 @@
 
 
 	<p class="notes" id="credit">
-		Documentation generated on Fri, 11 Sep 2009 14:19:20 -0400 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.0a2</a>
+		Documentation generated on Thu, 17 Dec 2009 16:13:02 -0500 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.0a2</a>
 	</p>
 	</div></body>
 </html>
