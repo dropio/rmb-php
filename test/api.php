@@ -2,13 +2,6 @@
 require_once 'PHPUnit/Framework.php';
 include('../Dropio/Api.php');
 
-//Prod
-//$_ENV['DROPIO_API_KEY'] = 'e7f250a4e70d88f2067dfa84bfa76a757641b0f1';
-
-//Stage
-$_ENV['DROPIO_API_KEY'] = '6c3eefba5508d8ec336d674409986a5babab6c24';
-Dropio_Api::setApiUrl('http://stage-api.drop.io');
-
 if (!isset($_ENV['DROPIO_API_KEY']))
   throw new Exception('Set the DROPIO_API_KEY environment variable: export DROPIO_API_KEY=xxx');
 

@@ -1,8 +1,19 @@
 <?php
 
 /**
- * Enter description here...
+ * Dropio_Drop_Subscription represents a subscription. 
  *
+ * 
+ * Example to add a pingback subscription to a drop:
+ * 
+ * 
+    $drop = Dropio_Drop::instance()->save();
+
+    $subscription = Dropio_Drop_Subscription::instance($drop)
+      ->set('type', 'pingback')
+      ->set('url', 'http://example.org/' . md5($a))
+      ->save();
+        
  */
 
 Class Dropio_Drop_Subscription extends Dropio_Data {
@@ -11,7 +22,8 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
   var $primary_key = 'id';
 
   /**
-	 * Enter description here...
+	 * The constructor takes in the drop which the subscriptiong is being added to
+	 * and the optional subscription id.
 	 *
 	 * @param Dropio_Drop $drop
 	 * @param integer $subscription_id
@@ -24,6 +36,13 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
 
   }
 
+  /**
+   * Returns a new or previously created subscription.
+   *
+   * @param Dropio_Drop $drop
+   * @param integer $subscription_id
+   * @return Dropio_Drop_Subscription
+   */
   static function instance ( Dropio_Drop &$drop, $subscription_id = null ) {
 
     $subscription = new Dropio_Drop_Subscription($drop, $subscription_id);
@@ -32,7 +51,7 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
   }
 
   /**
-   * Enter description here...
+   * Create an object from an array.
    *
    * @param unknown_type $array
    * @return unknown
@@ -49,7 +68,7 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
 
 
   /**
-	 * Enter description here...
+	 * Load a subscription.
 	 *
 	 * @return Dropio_Drop_Subscription
 	 */
@@ -68,9 +87,9 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
   }
 
   /**
-	 * Enter description here...
+	 * Delete a subscription, returns an array directly from the API.
 	 *
-	 * @return Dropio_Drop_Subscription
+	 * @return Array
 	 */
 
   function delete() {
@@ -85,7 +104,7 @@ Class Dropio_Drop_Subscription extends Dropio_Data {
   }
 
   /**
-	 * Enter description here...
+	 * Writes the subscription to the API.
 	 *
 	 * @return Dropio_Drop_Subscription
 	 */
