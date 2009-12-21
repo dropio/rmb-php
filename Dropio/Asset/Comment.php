@@ -7,9 +7,9 @@
  * For example: 
  *  
  *  foreach ($asset->getComments($page) as $comment) {
-      echo $comment->contents; //Dropio_Asset_Comment
-      }
-      
+ *    echo $comment->contents; //Dropio_Asset_Comment
+ *    }
+ *    
  *
  */
 

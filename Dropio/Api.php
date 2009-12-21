@@ -11,7 +11,7 @@ include 'Drop/Subscription/Set.php';
 include 'Asset/Set.php';
 include 'Asset/Comment.php';
 include 'Asset/Comment/Set.php';
-
+ 
 if (!extension_loaded('curl')) {
   throw new Dropio_Exception('This library requires the Curl extension.  Read more: http://php.net/manual/en/book.curl.php');
 } 
@@ -140,7 +140,8 @@ Class Dropio_Api {
 		**/
 		
     curl_setopt($ch, CURLOPT_USERAGENT, 'Drop.io PHP client v' . self::CLIENT_VER);
-
+    curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+    
     switch($method){
       case 'POST':
         curl_setopt($ch, CURLOPT_POST, 1);

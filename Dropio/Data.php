@@ -47,7 +47,9 @@ Abstract Class Dropio_Data {
 
   /**
    * Instead using the magic __SET() function, this can be used in order to 
-   * facilitate chaining.  $obj->set('title', 'My Title')->set('name', 'Name)->..
+   * facilitate chaining.  
+   * 
+   * $obj->set('title', 'My Title')->set('name', 'Name)->..
    *
    * @param string $var
    * @param mixed $val
@@ -73,8 +75,9 @@ Abstract Class Dropio_Data {
       return $this->values[$this->primary_key];
     }
 
-    if (!$this->loaded)
-    $this->load();
+    if (!$this->loaded) {
+      $this->load();
+    }
 
     return array_key_exists($var,$this->values)?$this->values[$var]:null;
   }

@@ -6,14 +6,13 @@
  * 
  * Example to add a pingback subscription to a drop:
  * 
- * 
-    $drop = Dropio_Drop::instance()->save();
-
-    $subscription = Dropio_Drop_Subscription::instance($drop)
-      ->set('type', 'pingback')
-      ->set('url', 'http://example.org/' . md5($a))
-      ->save();
-        
+ *  $drop = Dropio_Drop::instance()->save();
+ *
+ *  $subscription = Dropio_Drop_Subscription::instance($drop)
+ *    ->set('type', 'pingback')
+ *    ->set('url', 'http://example.org/' . md5($a))
+ *    ->save();
+ *      
  */
 
 Class Dropio_Drop_Subscription extends Dropio_Data {

@@ -45,7 +45,9 @@ Class Dropio_Asset extends Dropio_Data {
       throw new Dropio_Exception("Asset name must be set in order to delete");
     }
 
-    return $this->dropio_api->request('DELETE','drops/' . $this->drop->name . '/assets/' . $this->values[$this->primary_key],
+    return $this->dropio_api->request(
+    'DELETE',
+    'drops/'.$this->drop->name.'/assets/'.$this->values[$this->primary_key],
     Array('token'=>$this->drop->token())
     );
 
