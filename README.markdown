@@ -1,7 +1,5 @@
 PHP Library for accessing Drop.io's API.  
 ============================
-WARNING: This library uses the upcoming version 2.0 of the Drop.io API.  Only use it for testing and development until API version 2.0 is officially released.
-
 This library requires to you sign up for an API key. To get an API key, go to [http://api.drop.io/](http://api.drop.io/).
 
 Set the api key to use used by the library.
