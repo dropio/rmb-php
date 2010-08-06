@@ -1,5 +1,8 @@
 <?php
 
+include_once('Api.php');
+include_once('Asset.php');
+
 Class Dropio_Drop_Exception extends Dropio_Exception{};
 
 /**
@@ -17,424 +20,299 @@ Class Dropio_Drop_Exception extends Dropio_Exception{};
  * 
  */
 
-Class Dropio_Drop extends Dropio_Data {
+Class Dropio_Drop extends Dropio_Api {
 
-  var $dropio_api = null;
-  var $token = null;
+  private $_origName = null;
+  private $_token    = null;
+  private $_assets   = array();  # Array of asset objects
 
   /**
-   * Standard constructor.  $drop_name can be set to either later load or 
-   * create a new drop.
-   *
-   * @param string $name
-   * @param string $token
+   * @var boolean Has a drop already been loaded?
    */
+  private $_is_loaded    = false;
 
-  function __construct ( $drop_name = null, $token = null ) {
-    $this->dropio_api = new Dropio_Api();
-    $this->values[$this->primary_key] = $drop_name;
-    $this->token = $token;
+
+  /**
+   * Load a drop by name (dropname)
+   *
+   * @param <type> $dropname
+   * @return <type>
+   */
+  public function load($dropname)
+  {
+    $this->setValues($this->request('GET', "drops/$dropname", array()));
+    $this->_origName = $dropname;
+    $this->_is_loaded = true;
+    return $this;
   }
 
-  /**
-   * Instance method that allows for chaining such as:
-   * $asset = Drop_Dropio::instance()->save()->addFile('/tmp/file');
-   * 
-   * @param string $name
-   * @param string $token
-   * @return Dropio_Drop
+  /*
+   * Help function used to format data array when updating a drop
    */
-
-  static function instance ( $name = null, $token = null ) {
-    return new Dropio_Drop ( $name, $token );
-  }
-
-
-  /**
-   * Loads a drop.  This makes an immediate API call for all drop details.
-   *
-   * @param string $name
-   * @param string $token
-   * @return Dropio_Drop
-   */
-
-  static function load ( $name, $token = null ) {
-    $drop = new Dropio_Drop ( $name, $token );
-    return $drop->_load($name, $token);
-  }
-
-  /**
-   * Enter description here...
-   *
-   * @param string $name
-   * @param string $token
-   * @return Dropio_Drop
-   */
-
-  function _load ( $name = null, $token = null ) {
-
-    if (!strlen($name) && isset($this->values[$this->primary_key])) {
-      $name = $this->values[$this->primary_key] ;
-    }
-
-    if (strlen($token)) {
-      $this->token = $token;
-    }
-
-    if (!strlen($name)) {
-      throw new Dropio_Drop_Exception( 'Name must be set in order to load' );
-    }
-
-    $result = $this->dropio_api->request('GET', 'drops/' . $name,
-    Array('token'=>$this->token())
+  private function prepareUpdate()
+  {
+    return array(
+      'name'        => $this->getName(),
+      'description' => $this->getDescription()
     );
-
-    return $this->loadFromArray($result);
-
   }
-
-
-  function token () {
-
-    switch (true) {
-      case strlen($this->token):
-        return $this->token;
-      case isset($this->values['admin_token']) && strlen($this->values['admin_token']):
-        return $this->values['admin_token'];
-      case isset($this->values['guest_token']) && strlen($this->values['guest_token']):
-        return $this->values['guest_token'];
-
-      default:
-        //throw new Dropio_Exception('Unable to find token for this drop');
-    }
-
-  }
-
 
   /**
-   * Enter description here...
-   *
-   * @return Dropio_Drop
+   * Save data back to a drop
    */
-
-  function save () {
-
-    if (!$this->loaded) {
-
-      //We'll create a new one.
-      $result = $this->dropio_api->request('POST', 'drops', $this->values);
-
-      foreach ($result as $var=>$value) {
-        $this->$var = $value;
-      }
-
-      $this->loaded = true;
-
+  public function save()
+  {
+    # Is this new or an update? If _is_loaded is false, the it is new. Otherwise
+    # we are updating an existing drop
+    if (!$this->_is_loaded) {
+      # We'll create a new one.
+      if ($this->getName() == NULL)
+        $result = $this->request('POST', 'drops', array());
+      else
+        $result = $this->request('POST', 'drops', array('name'=>$this->getName()));
+      $this->_is_loaded = true;
     } else {
-      //Updating;
-
-      $updates = Array();
-
-      foreach ($this->changed as $var) {
-        if (array_key_exists($var, $this->values)) {
-          if (is_bool($this->values[$var]))
-          $updates[$var] = $this->values[$var]?'true':'false';
-          else
-          $updates[$var] = $this->values[$var];
-        }
-
-      }
-
-      $updates['token'] = $this->token();
-
-      $result = $this->dropio_api->request('PUT', 'drops/' . $this->name, $updates);
-
-      return $this->loadFromArray($result);
+      $result = $this->request('PUT', 'drops/' . $this->_origName, $this->prepareUpdate());
     }
 
+    $this->setValues($result);
+    $this->_origName = $this->getName();
     return $this;
-
   }
 
   /**
-   * Retrieves a single asset by it's name.
+   * Delete a drop and all its contents
    *
-   * @param unknown_type $asset_name
-   * @return unknown
+   * @link http://backbonedocs.drop.io/Delete-a-Drop
+   * @return mixed
    */
-
-  function getAsset ( $asset_name ) {
-
-    $asset_array = $this->dropio_api->request('GET', 'drops/' . $this->name . '/assets/' . $asset_name,
-    Array('token'=>$this->token())
-    );
-
-    $asset = new Dropio_Asset();
-    $asset->drop = $this;
-
-    return $asset->loadFromArray($asset_array);
-
-  }
-
-  /**
-   * Returns a Dropio_Asset_Set of assets.
-   *
-   * @param integer $page
-   * @return Dropio_Drop
-   */
-
-  function getAssets ( $page = 1, $order = 'oldest') {
-
-    if (!in_array($order, Array('oldest', 'latest'))){
-      throw new Dropio_Drop_Exception('Invalid value for order, must be either: oldest or latest');
-    }
-
-    $result = $this->dropio_api->request('GET', 'drops/' . $this->name . '/assets',
-    Array(
-    'page'=>$page,
-    'token'=>$this->token(),
-    'order'=>$order
-    )
-    );
-
-    $assets = Array();
-
-    foreach ( $result['assets'] as $asset_array) {
-      $asset = new Dropio_Asset();
-      $asset->drop = $this;
-
-      $assets[ $asset_array['name'] ] = $asset->loadFromArray($asset_array);
-    }
-
-    return new Dropio_Asset_Set($assets,$result['total'], $result['page'], $result['per_page'], 'name');
-
-  }
-
-  
-  /**
-   * Returns a Dropio_Asset_Set of assets.
-   *
-   * @param integer $page
-   * @return Dropio_Drop
-   */
-
-  function getSubscriptions ( $page = 1) {
-
-    $result = $this->dropio_api->request('GET', 'drops/' . $this->name . '/subscriptions',
-    Array(
-    'page'=>$page,
-    'token'=>$this->token(),
-    'order'=>$order
-    )
-    );
-
-    $subscriptions = Array();
-
-    foreach ( $result['subscriptions'] as $subscription_array) {
-      $subscription = new Dropio_Drop_Subscription($this);
-      $subscriptions[ $subscription_array['id'] ] = $subscription->loadFromArray($subscription_array);
-    }
-
-    return new Dropio_Drop_Subscription_Set($subscriptions,$result['total'], $result['page'], $result['per_page'], 'id');
-
-  }
-
-
-  /**
-   * Creates a note asset with $contents as the content. 
-   *
-   * @param string $contents
-   * @param string $title
-   * @return Dropio_Asset
-   */
-
-  function addNote ( $contents, $title = null ) {
-
-    $response = $this->dropio_api->request('POST','drops/' . $this->name . '/assets',
-    Array(
-    'drop_name'=> $this->name,
-    'contents' => $contents,
-    'title'    => $title,
-    'token'    => $this->token()
-    )
-    );
-
-    $asset       = new Dropio_Asset();
-    $asset->drop = $this;
-
-    return $asset->loadFromArray($response);
-
-  }
-
-  /**
-   * Creates a link asset
-   *
-   * @param string $url
-   * @param string $title
-   * @param string $description
-   * @return Dropio_Asset
-   */
-
-  function addLink ( $url, $title = null, $description = null ) {
-
-    $response = $this->dropio_api->request('POST','drops/' . $this->name . '/assets',
-    Array(
-    'drop_name'		=> $this->name,
-    'title'    		=> $title,
-    'url'    			=> $url,
-    'description' => $description,
-    'token'				=> $this->token()
-    )
-    );
-
-    $asset       = new Dropio_Asset();
-    $asset->drop = $this;
-    return $asset->loadFromArray($response);
-
-  }
-
-  /**
-   * Create an asset from a remote file.
-   *
-   * @param string $file_url
-   * @return Dropio_Asset
-   */
-
-  function addFileUrl ( $file_url ) {
-
-    $response = $this->dropio_api->request('POST','drops/' . $this->name . '/assets',
-    Array(
-    'drop_name'		=> $this->name,
-    'file_url'    => $file_url,
-    'token'				=> $this->token()
-    )
-    );
-
-    $asset       = new Dropio_Asset();
-    $asset->drop = $this;
-
-    return $asset->loadFromArray($response);
-
-  }
-
-
-  /**
-   * Create an asset from a local file.
-   *
-   * @param string $file
-   * @return Dropio_Asset
-   */
-
-  function addFile ( $file ) {
-
-    if (!$this->loaded) {
-      $this->load();
-    }
-
-    if (!file_exists($file)) {
-      throw new Dropio_Drop_Exception('File does not exist: ' . $file);
-    }
-
-    $response = $this->dropio_api->request('UPLOAD',null,
-    Array(
-    'drop_name' => $this->name,
-    'file'      => $file,
-    'token'     => $this->token()
-    )
-    );
-
-    $asset = new Dropio_Asset();
-    $asset->drop = $this;
-    return $asset->loadFromArray($response);
-
-  }
-
-  /**
-   * Delete a drop and all it's contents.
-   *
-   * @return Dropio_Drop
-   */
-
-  function delete() {
-
-    $result = $this->dropio_api->request('DELETE','drops/' . $this->name,
-    Array('token'=>$this->token())
-    );
-
+  public function delete()
+  {
+    $result = $this->request('DELETE','drops/' . $this->getName(), array());
     return $result;
-
   }
 
   /**
-   * Delete all assets from a drop
+   * Remove all assets from a drop
    *
-   * @return Dropio_Drop
+   * @return <type>
    */
+  public function emptyDrop()
+  {
+    $result = $this->request('PUT', 'drops/' . $this->_origName . '/empty', array());
+    $this->_assets = null;
+    return $result;
+  }
 
-  function emptyAssets() {
 
-    $result = $this->dropio_api->request('PUT','drops/' . $this->name . '/empty',
-    Array('token'=>$this->token())
+ /**
+   *
+   * @return string An HTML string containgin a smiple form upload.
+   */
+  public function getSimpleUploadForm()
+  {
+    $docroot = "http://".$_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+
+    $params = array(
+      'api_key'     => $this->getApiKey(),
+      'drop_name'   => $this->_origName,
+      'format'      => 'json',
+      'redirect_to' => $docroot,
+      'version'     => '3.0'
     );
+
+    $params = $this->_signIfNeeded($params);
+    $input='';
+    foreach ($params as $k=>$v)
+      $input .= "<input type=\"hidden\" name=\"$k\" value=\"$v\"/>\n";
+
+    $html = <<<EOF
+    <form action="http://assets.drop.io/upload" method="post" enctype="multipart/form-data">
+      <ul>
+        <li>
+          <label for="file">Add a new file:</label>
+          <input type="file" name="file" size="25"/>
+        </li>
+        <li>
+          $input
+          <input type="submit" value="submit"/>
+        </li>
+      </ul>
+    </form>
+
+EOF;
+
+    return $html;
+  }
+
+  public function getUploadifyForm()
+  {
+    $upload_url = self::UPLOAD_URL;
+
+    $docroot = "http://".$_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+
+    $params = array(
+      'api_key'     => $this->getApiKey(),
+      'drop_name'   => $this->_origName,
+      'format'      => 'json',
+      'version'     => '3.0'
+    );
+
+    $params = $this->_signIfNeeded($params);
+
+    $str= json_encode($params);
+
+    $html =<<<EOL
+		<script type="text/javascript" src="../uploadify/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="../uploadify/swfobject.js"></script>
+		<script type="text/javascript" src="../uploadify/jquery.uploadify.v2.1.0.min.js"></script>
+		<link rel="stylesheet" type="text/css" media="screen, projection" href="../uploadify/uploadify.css" />
+
+		<script type="text/javascript">// <![CDATA[
+		$(document).ready(function() {
+		$('#file').uploadify({
+		'uploader'  : '../uploadify/uploadify.swf',
+		'script'    : '$upload_url',
+		'multi'    : true,
+		'scriptData': $str,
+		'cancelImg' : '../uploadify/cancel.png',
+		'auto'      : true,
+		'onAllComplete' : function(){setTimeout(window.location = '$docroot',3000);},
+		'folder'    : '/uploads'
+		});
+		});
+		// ]]></script>
+
+    <input type="file" name="fileUpload" id="file"/>
+EOL;
+
+    return $html;
+  }
+
+  public function createDrop($dropname)
+  {
+    return $this->setName($dropname)->save();
+  }
+
+  /**
+   * Get a instance of a Drop object that is useful for chaining.
+   *
+   * @param <type> $api_key
+   * @param <type> $api_secret
+   * @return Dropio_Api
+   */
+  public static function getInstance($api_key=null,$api_secret=null)
+  {
+    return new Dropio_Drop($api_key, $api_secret);
+  }
+
+  /**
+   * Getter methods for response bodies
+   */
+  public function getChatPassword()   { return $this->_values['chat_password']; }
+  public function getAdminToken()     { return $this->_values['admin_token']; }
+  public function getAssetCount()     { return $this->_values['asset_count']; }
+  public function getCurrentBytes()   { return $this->_values['current_bytes']; }
+  public function getExpirationLength() { return $this->_values['expiration_length']; }
+  public function getEmail()          { return $this->_values['email']; }
+  public function getDescription()    { return @$this->_values['description']; }
+  public function getMaxBytes()       { return $this->_values['max_bytes']; }
+  public function getName()           { return $this->_values['name']; }
+  public function getExpiresAt()      { return $this->_values['expires_at']; }
+
+  /**
+   * Setter methods for updates / new drops
+   */
+  public function setDescription($description) {
+    $this->_values['description'] = $description;
+    return $this;
+  }
+
+  /*
+   * Set the drop name
+   *
+   * @param string The name of the drop
+   */
+  public function setName($name)
+  {
+    $this->_values['name'] = $name;
+    return $this;
+  }
+
+
+################################################################################
+#  Methods that deal with Assets
+################################################################################
+
+  /**
+   * Return all assets from a drop
+   *
+   * @return mixed
+   */
+  private function loadAssets()
+  {
+    $assets = $this->request('GET', 'drops/' . $this->_origName . '/assets',array());
+
+    # Loop over each asset in the drop and create a pre-loaded object
+    foreach($assets['assets'] as $a)
+    {
+      $arr = new Dropio_Asset($this->getApiKey(),$this->getApiSecret());
+      $arr->setName($a['name'])
+        ->setDropName($this->getName())
+        ->setValues($a)
+        ->setRoles($a['roles']);
+      $this->_assets[] = $arr;
+    }
+
+    # TODO - this should iterate over the list and create an array of asset objects
 
     return $this;
-
-  }
-
-
-  /**
-   * Promote a nick to moderator.
-   *
-   * @param string $nick
-   * @return array
-   */
-
-  function promoteNick ( $nick ) {
-
-    return $this->dropio_api->request('POST','drops/' . $this->name . '/promote',
-    Array(
-    'token'				=> $this->token(),
-    'nick'				=> $nick
-    )
-    );
-
   }
 
   /**
-   * Generates a redirect url to automatically authenticate a user.
+   * Return the array of asset objects to the calling operation
    *
-   * @param integer $expires_in
-   * @return string
+   * @return <type>
    */
+  public function getAssets()
+  {
+    if (empty($this->_assets))
+      $this->loadAssets();
 
-  function getRedirectUrl ( $expires_in = 900 ) {
-
-    $expires = time() + $expires_in;
-
-    $signature = sha1($expires.'+'.$this->token().'+'.$this->name);
-
-    return "http://drop.io/{$this->name}/from_api/?version=2.0&signature=${signature}&expires=${expires}";
-
+    return $this->_assets;
   }
 
   /**
-   * Returns a HTML for a file uploader.
+   * Retrieve a single asset from a drop
    *
-   * @return unknown
+   * @param string $asset_name
+   * @return mixed A single Asset object
    */
+  public function getAsset($asset_name = null)
+  {
+    $result = $this->request('GET', 'drops/' . $this->getName() . "/assets/$asset_name",array());
 
-  function getEmbedCode () {
+    # TODO - move this to a helper method
+    $arr = new Dropio_Asset($this->getApiKey(),$this->getApiSecret());
+    $arr->setName($result['name'])
+        ->setDropName($this->getName())
+        ->setValues($result)
+        ->setRoles($result['roles']);
 
-    $result = $this->dropio_api->request('GET','drops/' . $this->name . '/upload_code',
-    Array('token'=>$this->token())
-    );
-
-    return $result['upload_code'];
+    return $arr;
 
   }
 
+  public function promoteNick() {}
 
+  # Subscriptions
+  public function getSubscriptions() {}
+  public function getSubscription() {}
+  public function createSubscription() {}
+  public function deleteSubscription() {}
 
+  public function isLoaded()
+  {
+    return $this->_is_loaded;
+  }
 }
-
-
