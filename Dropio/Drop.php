@@ -1,7 +1,8 @@
 <?php
 
-include_once('Api.php');
-include_once('Asset.php');
+# Drop requires both API access and Asset
+include_once(dirname(__FILE__) . '/Api.php');
+include_once(dirname(__FILE__) . '/Asset.php');
 
 Class Dropio_Drop_Exception extends Dropio_Exception{};
 
@@ -12,7 +13,7 @@ Class Dropio_Drop_Exception extends Dropio_Exception{};
  * 
  * For example, to create a drop and to access it.
  * 
- * $drop = Dropio_Drop::instance('dropname')->save();
+ * $drop = Dropio_Drop::getInstance($API_KEY)->save();
  * 
  * To load a pre-existing drop and load:
  * 
@@ -29,7 +30,7 @@ Class Dropio_Drop extends Dropio_Api {
   /**
    * @var boolean Has a drop already been loaded?
    */
-  private $_is_loaded    = false;
+  private $_is_loaded = false;
 
 
   /**
@@ -145,8 +146,23 @@ EOF;
     return $html;
   }
 
-  public function getUploadifyForm()
+  /**
+  *
+  *   - srcdir              the source directory that holds the uploadify files.
+  *                         Default to /uploadify/
+  *
+  * Options are:
+  *   - comment 
+  *   - description
+  *   - redirect_to
+  *   - convert_to      
+  *   - output_locations
+  *   - pingback_url        the url of a pingback server
+  *  
+  */
+  public function getUploadifyForm($srcdir=null,$options=null)
   {
+
     $upload_url = self::UPLOAD_URL;
 
     $docroot = "http://".$_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -157,27 +173,37 @@ EOF;
       'format'      => 'json',
       'version'     => '3.0'
     );
+    
+    # Process the optional parameters
+    foreach ($options as $k=>$v)
+      $params[$k] = $v;
 
     $params = $this->_signIfNeeded($params);
 
     $str= json_encode($params);
 
     $html =<<<EOL
-		<script type="text/javascript" src="../uploadify/jquery-1.3.2.min.js"></script>
-		<script type="text/javascript" src="../uploadify/swfobject.js"></script>
-		<script type="text/javascript" src="../uploadify/jquery.uploadify.v2.1.0.min.js"></script>
-		<link rel="stylesheet" type="text/css" media="screen, projection" href="../uploadify/uploadify.css" />
+		<script type="text/javascript" src="$srcdir/uploadify/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="$srcdir/uploadify/swfobject.js"></script>
+		<script type="text/javascript" src="$srcdir/uploadify/jquery.uploadify.v2.1.0.min.js"></script>
+		<link rel="stylesheet" type="text/css" media="screen, projection" href="$srcdir/uploadify/uploadify.css" />
 
 		<script type="text/javascript">// <![CDATA[
 		$(document).ready(function() {
 		$('#file').uploadify({
-		'uploader'  : '../uploadify/uploadify.swf',
+		'uploader'  : '$srcdir/uploadify/uploadify.swf',
 		'script'    : '$upload_url',
-		'multi'    : true,
+		'multi'     : true,
 		'scriptData': $str,
-		'cancelImg' : '../uploadify/cancel.png',
+		'cancelImg' : '$srcdir/uploadify/cancel.png',
 		'auto'      : true,
-		'onAllComplete' : function(){setTimeout(window.location = '$docroot',3000);},
+        /* TODO: This is not quite working right now
+        'onComplete': function(e,q,f,response,d){
+            //var j = eval('(' + response + ')');
+            jQuery.post('ajax/upload_complete.php', { drop_name:  '$this->_origName', response: response });
+            },*/
+		'onAllComplete' : function(){setTimeout(window.location = '$docroot',1000);},
+		'onError'   : function(e, q, f, o) { alert("ERROR: " + o.info + o.type); }, 
 		'folder'    : '/uploads'
 		});
 		});
@@ -222,6 +248,8 @@ EOL;
 
   /**
    * Setter methods for updates / new drops
+   *
+   * @param string A description of the drop.
    */
   public function setDescription($description) {
     $this->_values['description'] = $description;
@@ -236,6 +264,9 @@ EOL;
   public function setName($name)
   {
     $this->_values['name'] = $name;
+
+    # Set the original name if it has not yet been set
+    $this->_origName = (is_null($this->_origName)) ? $name : $this->_origName;
     return $this;
   }
 
@@ -263,8 +294,6 @@ EOL;
         ->setRoles($a['roles']);
       $this->_assets[] = $arr;
     }
-
-    # TODO - this should iterate over the list and create an array of asset objects
 
     return $this;
   }
@@ -305,7 +334,7 @@ EOL;
 
   public function promoteNick() {}
 
-  # Subscriptions
+  # Subscriptions - # TODO - implement these method stubs
   public function getSubscriptions() {}
   public function getSubscription() {}
   public function createSubscription() {}

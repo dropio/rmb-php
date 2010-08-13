@@ -1,6 +1,6 @@
 <?php
 
-include_once('Drop.php');
+include_once(dirname(__FILE__) . '/Drop.php');
 
 Class Dropio_Asset extends Dropio_Api {
   /**
@@ -22,6 +22,10 @@ Class Dropio_Asset extends Dropio_Api {
    */
   private $_roles     = array();
 
+  /**
+   *
+   * @var boolean Tells us whether the asset has already been loaded from the drop
+   */
   private $_is_loaded  = false;
 
     /**
@@ -36,6 +40,11 @@ Class Dropio_Asset extends Dropio_Api {
     return new Dropio_Asset($api_key, $api_secret);
   }
 
+  /**
+   * Load and return the asset object
+   *
+   * @return mixed An Asset object
+   */
   public function load()
   {
     $this->setValues($this->request('GET', "drops/".$this->getDropName()."/assets/".$this->getName(), array()));
@@ -91,18 +100,25 @@ Class Dropio_Asset extends Dropio_Api {
   }
 
 
-  public function createLink($title, $url, $description=null, $comment=null)
+  /**
+   *
+   * @param <type> $title
+   * @param <type> $url
+   * @param <type> $options
+   * @return mixed
+   */
+  public function createLink($title, $url, $options=null)
   {
     $params = array(
       'title' => $title,
       'url'   => $url
     );
 
-    if (!empty($description))
-      $params['description'] = $description;
-
-    if (!empty($comment))
-      $params['comment'] = $comment;
+    # Optional params
+    foreach($options as $k=>$v)
+    {
+      $params[$k] = $v;
+    }
 
     return $this->request('POST','drop/' . $this->_dropName . '/assets',$params);
 
@@ -113,23 +129,19 @@ Class Dropio_Asset extends Dropio_Api {
    * @link http://backbonedocs.drop.io/Create-a-Note
    *
    * @param <type> $content
-   * @param <type> $title
-   * @param <type> $description
-   * @param <type> $comment
+   * @param <type> $options
    * @return <type>
    */
-  public function createNote($content, $title=null,$description=null, $comment=null)
+  public function createNote($content, $options=null)
   {
-    $params = array(
-      'title' => $title,
-      'url'   => $url
-    );
+    # Required Params
+    $params['content'] = $content;
 
-    if (!empty($description))
-      $params['description'] = $description;
-
-    if (!empty($comment))
-      $params['comment'] = $comment;
+    # Optional params
+    foreach($options as $k=>$v)
+    {
+      $params[$k] = $v;
+    }
 
     return $this->request('POST','drop/' . $this->_dropName . '/assets',$params);
 
@@ -138,28 +150,21 @@ Class Dropio_Asset extends Dropio_Api {
 
   /**
    *
-   * @param <type> $url
-   * @param <type> $description
-   * @param <type> $convert_to
-   * @param <type> $ping_back
+   * @param string $url     The url drop.io will download
+   * @param mixed  $options optional parameters
    * @return <type>
    */
-  public function createFileFromUrl($url,$description=null,$convert_to=null,$ping_back=null)
+  public function createFileFromUrl($url,$options=null)
   {
     # Required params
-    $params = array(
-      'url'   => $url
-    );
+    $params['url'] = $url;
 
-    if (!empty($description))
-      $params['description'] = $description;
-
-    if (!empty($convert_to))
-      $params['convert_to'] = $convert_to;
-
-    if (!empty($ping_back))
-      $params['ping_back'] = $ping_back;
-
+    # Optional params
+    foreach($options as $k=>$v)
+    {
+      $params[$k] = $v;
+    }
+    
     return $this->request('POST','drop/' . $this->_dropName . '/assets',$params);
 
   }
@@ -173,7 +178,7 @@ Class Dropio_Asset extends Dropio_Api {
    * @param <type> $comment
    * @return <type>
    */
-  public function createAssetFromStorageLocation($storage_location,$storage_key,$filename,$description=null,$comment=null)
+  public function createAssetFromStorageLocation($storage_location,$storage_key,$filename,$options=null)
   {
     # Required params
     $params = array(
@@ -182,17 +187,42 @@ Class Dropio_Asset extends Dropio_Api {
       '$filename'          => $filename
     );
 
-    if (!empty($description))
-      $params['description'] = $description;
-
-    if (!empty($comment))
-      $params['comment'] = $comment;
+    # Optional params
+    foreach($options as $k=>$v)
+    {
+      $params[$k] = $v;
+    }
 
     return $this->request('POST','drop/' . $this->_dropName . '/assets',$params);
 
   }
 
-  public function uploadFile(){}
+  /**
+   * Upload a file to drop.io
+   *
+   * required: drop_name, file
+   * optional: comment, description, redirect_to, convert_to, ouput_locations, pingback_url
+   *
+   * @param string  The drop name (required)
+   * @param mixed   The file (required)
+   * @param mixed   Optional parameters
+   */
+  public function uploadFile($drop_name,$file,$options=null)
+  {
+    # Set the required params
+    $params['dropname'] = $drop_name;
+    $params['file']     = $file;
+
+    # Process the optional params
+    foreach($options as $k => $v)
+    {
+      $params[$k] = $v;
+    }
+
+    return $this->request('UPLOAD',self::UPLOAD_URL,$params);
+
+  }
+
   public function downloadOriginalFile() {}
   public function getEmbedCode() {}
   public function updateAsset() {}
