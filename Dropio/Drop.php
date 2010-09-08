@@ -180,7 +180,9 @@ EOF;
     );
     
     # Process the optional parameters
-    foreach ($options as $k => $v) { $params[$k] = $v; }
+    if (!($options == NULL)) {
+      foreach ($options as $k => $v) { $params[$k] = $v; }
+    }
 
     $params = $this->_signIfNeeded($params);
 
