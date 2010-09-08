@@ -22,7 +22,9 @@ Class Dropio_Api {
    */
   protected $_values       = null;
 
-  public function __construct($key,$secret=null) {
+  public function __construct($key=null,$secret=null) {
+    if(is_null($key))
+        throw new Dropio_Api_Exception('You must set an API key.');
     $this->_api_key    = $key;
     $this->_api_secret = $secret;
   }
@@ -86,7 +88,7 @@ Class Dropio_Api {
     if($this->_api_secret !== NULL)
     {
         $params = $this->_addRequiredParams($params);
-        $params = $this->_signRequest($params);
+        $params = $this->signRequest($params);
     }
 
     return $params;
@@ -98,7 +100,7 @@ Class Dropio_Api {
       return $params;
   }
 
-  protected function _signRequest($params = null)
+  public function signRequest($params = null)
   {
     $str='';
     ksort($params);
@@ -231,6 +233,7 @@ Class Dropio_Api {
     return new Dropio_Api($api_key,$api_secret);
   }
 
+	
   public function getApiKey() { return $this->_api_key; }
   public function getApiSecret() { return $this->_api_secret; }
 }

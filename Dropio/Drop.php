@@ -63,15 +63,17 @@ Class Dropio_Drop extends Dropio_Api {
    */
   public function save()
   {
-    # Is this new or an update? If _is_loaded is false, the it is new. Otherwise
-    # we are updating an existing drop
+    # If _is_loaded is false, the drop is new. Otherwise update
     if (!$this->_is_loaded) {
-      # We'll create a new one.
-      if ($this->getName() == NULL)
-        $result = $this->request('POST', 'drops', array());
-      else
-        $result = $this->request('POST', 'drops', array('name'=>$this->getName()));
+      
+      # If the name is null, create a random drop.
+      if ($this->getName() == NULL) { 
+          $result = $this->request('POST', 'drops', array('expiration_length'=>'1_YEAR_FROM_LAST_VIEW'));
+      } else {
+          $result = $this->request('POST', 'drops', array('name'=>$this->getName(),'expiration_length'=>'1_YEAR_FROM_LAST_VIEW'));
+      }
       $this->_is_loaded = true;
+      
     } else {
       $result = $this->request('PUT', 'drops/' . $this->_origName, $this->prepareUpdate());
     }
@@ -87,9 +89,12 @@ Class Dropio_Drop extends Dropio_Api {
    * @link http://backbonedocs.drop.io/Delete-a-Drop
    * @return mixed
    */
-  public function delete()
+  public function delete($drop_name=null)
   {
-    $result = $this->request('DELETE','drops/' . $this->getName(), array());
+    if($drop_name !== NULL) { 
+      $this->setName($drop_name); 
+    }
+    $result = $this->request('DELETE','drops/' . $this->getName());
     return $result;
   }
 
@@ -100,7 +105,7 @@ Class Dropio_Drop extends Dropio_Api {
    */
   public function emptyDrop()
   {
-    $result = $this->request('PUT', 'drops/' . $this->_origName . '/empty', array());
+    $result = $this->request('PUT', 'drops/' . $this->_origName . '/empty');
     $this->_assets = null;
     return $result;
   }
@@ -175,8 +180,7 @@ EOF;
     );
     
     # Process the optional parameters
-    foreach ($options as $k=>$v)
-      $params[$k] = $v;
+    foreach ($options as $k => $v) { $params[$k] = $v; }
 
     $params = $this->_signIfNeeded($params);
 
@@ -215,9 +219,18 @@ EOL;
     return $html;
   }
 
-  public function createDrop($dropname)
+  /**
+   * Create a drop
+   *
+   * @link http://backbonedocs.drop.io/Create-a-Drop
+   * @param <type> $dropname
+   * @return <type>
+   */
+  public function createDrop($dropname,$expires='1_YEAR_FROM_LAST_VIEW')
   {
-    return $this->setName($dropname)->save();
+    return $this->setName($dropname)->
+            setExpirationLength($expires)->
+            save();
   }
 
   /**
@@ -235,16 +248,16 @@ EOL;
   /**
    * Getter methods for response bodies
    */
-  public function getChatPassword()   { return $this->_values['chat_password']; }
   public function getAdminToken()     { return $this->_values['admin_token']; }
   public function getAssetCount()     { return $this->_values['asset_count']; }
+  public function getChatPassword()   { return $this->_values['chat_password']; }  
   public function getCurrentBytes()   { return $this->_values['current_bytes']; }
-  public function getExpirationLength() { return $this->_values['expiration_length']; }
-  public function getEmail()          { return $this->_values['email']; }
   public function getDescription()    { return @$this->_values['description']; }
+  public function getEmail()          { return $this->_values['email']; }
+  public function getExpirationLength() { return $this->_values['expiration_length']; }
+  public function getExpiresAt()      { return $this->_values['expires_at']; }
   public function getMaxBytes()       { return $this->_values['max_bytes']; }
   public function getName()           { return $this->_values['name']; }
-  public function getExpiresAt()      { return $this->_values['expires_at']; }
 
   /**
    * Setter methods for updates / new drops
@@ -335,13 +348,73 @@ EOL;
   public function promoteNick() {}
 
   # Subscriptions - # TODO - implement these method stubs
-  public function getSubscriptions() {}
-  public function getSubscription() {}
-  public function createSubscription() {}
-  public function deleteSubscription() {}
+  
+  
+  public function getSubscriptions() 
+  {
+    return $this->request('GET', "drops/{$this->getName()}/subscriptions",array());
+  }
 
+  /**
+   *
+   * @param <type> $sub_id
+   * @return <type>
+   */
+  public function getSubscription($sub_id)
+  {
+    return $this->request('GET', "drops/{$this->getName()}/subscriptions/$sub_id",array());
+  }
+
+  /**
+   *
+   * @param <type> $type
+   * @param <type> $events
+   * @param <type> $options
+   */
+  public function createSubscription($type,$events=array('asset_added'),$options=null) 
+  {
+
+    $params = array('type'=>$type);
+
+    # Process the optional parameters
+    foreach ($options as $k=>$v)
+      $params[$k] = $v;
+
+    foreach($events as $v)
+      $params[$v] = true;
+
+    $result = $this->request('POST', "drops/{$this->getName()}/subscriptions", $params);
+  }
+
+  /**
+   *
+   * @param <type> $sub_id
+   * @return <type>
+   */
+  public function deleteSubscription($sub_id)
+  {
+    return $this->request('GET', "drops/{$this->getName()}/subscriptions/$sub_id",array());
+  }
+
+
+  /**
+   * Tell us whether 
+   *
+   * @return boolean True if the drop is loaded, false if not loaded
+   */
   public function isLoaded()
   {
     return $this->_is_loaded;
+  }
+
+  /**
+   *
+   * @param enum $length
+   * @return mexed
+   */
+  public function setExpirationLength($length='1_YEAR_FROM_LAST_VIEW')
+  {
+      $this->_values['expiration_length'] = $length;
+      return $this;
   }
 }
