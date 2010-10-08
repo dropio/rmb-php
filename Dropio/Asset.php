@@ -102,6 +102,19 @@ Class Dropio_Asset extends Dropio_Api {
     return $this;
   }
 
+  public function convertAsset($outputs, $using = null, $pingback_url = null){
+	//This is a simplified conversion call that requires only an array of output parameter arrays
+	//(one for each requested conversion), which can omit the asset_id
+	//This convert function can only act on 1 asset (unlike it's more generic cousin in the Api class) 
+	$inputs = array(array("asset_id" => $this->getID(), "role" => "original_content", "name" => "source"));
+	$outputs = is_array($outputs[0]) ? $outputs : array($outputs);
+	//Insert the asset ID into any outputs requested if it was not specified
+	foreach($outputs as $output){
+		if(empty($output["asset_id"])) { $output["asset_id"] = $this->getID(); }
+	}
+	
+	return $this->convert($this->getType(), $inputs, $outputs);
+  }
 
   /**
    *
@@ -261,6 +274,7 @@ Class Dropio_Asset extends Dropio_Api {
 ################################################################################
   public function getDropName()       { return $this->_dropName; }
   public function getType()           { return $this->_values['type']; }
+  public function getID()           { return $this->_values['id']; }
   public function getTitle()          { return $this->_values['title']; }
   public function getDescription()    { return $this->_values['description']; }
   public function getCreatedAt()      { return $this->_values['created_at']; }

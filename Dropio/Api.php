@@ -74,7 +74,7 @@ Class Dropio_Api {
   /**
    * Set whether the API call is secure (HTTPS) or insecure (HTTP)
    *
-   * @param bolean $b (default true)
+   * @param boolean $b (default true)
    * @return mixed
    */
   public function setIsSecure($b = true)
@@ -83,40 +83,61 @@ Class Dropio_Api {
     return $this;
   }
 
-  protected function _signIfNeeded($params = null)
+  protected function _signIfNeeded($params = null, $method = "POST")
   {
     if($this->_api_secret !== NULL)
     {
         $params = $this->_addRequiredParams($params);
-        $params = $this->signRequest($params);
+        $params = $this->signRequest($params, $method);
     }
-
+	
     return $params;
   }
 
   protected function _addRequiredParams($params = null)
   {
+	  date_default_timezone_set('America/New_York');
       $params['timestamp'] = strtotime('now + 15 minutes');
       return $params;
   }
 
-  public function signRequest($params = null)
+  public function signRequest($params = null, $method = "POST")
   {
     $str='';
-    ksort($params);
-
-    # Weird, if token is present but empty, remove it. Move this logic to
-    # Drop object
-    if(empty($params['token']))
-      unset($params['token']);
-
-    foreach($params as $k=>$v)
-        $str .= "$k=$v";
-
+    $this->ksortTree($params);
+	
+	#for GET and DELETE calls, all values are interpreted as strings, so convert them
+	#before we JSON encode them. 
+	if($method == "GET" || $method == "DELETE"){ 
+   		foreach($params as $k=>$v){
+	        $params[$k]=(string)$v;
+		}
+	}
+	//print "\r\n Pingback url is: " . $params["pingback_url"];	
+	$str = json_encode($params);
+	//The ruby to_json does not add backslashes to slashes
+	$str = stripslashes($str);
+	#Debugging output
+	//print("\r\nstring to sign was: " . $str . $this->_api_secret .  "\r\n\r\n");
+	
+	#add the signature to the params
     $params['signature'] = sha1($str . $this->_api_secret);
-
+	
     return $params;
   }
+  
+	private function ksortTree( &$array )
+	{
+		if (!is_array($array)) {
+			return false;
+		}
+
+		ksort($array);
+		foreach ($array as $k=>$v) {
+			$this->ksortTree($array[$k]);
+		}
+		return true;
+  	}
 
   /**
    * Build a use that is either secure (HTTPS) or plain (HTTP)
@@ -143,15 +164,17 @@ Class Dropio_Api {
 
     $url =  $this->getApiUrl() . '/' . $path;
 
-    # Sign it, damn you!!
-    $params = $this->_signIfNeeded($params);
-
-    $ch = curl_init();
+    # Sign this api request if needed
+    $params = $this->_signIfNeeded($params, $method);
+	$ch = curl_init();
 
     # Setting the user agent, useful for debugging and allowing us to check which version
     curl_setopt($ch, CURLOPT_USERAGENT, 'Drop.io PHP client v' . self::CLIENT_VER);
     curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-
+	curl_setopt($ch, CURLOPT_VERBOSE, true); // Display communication with server
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-Type: application/json'));
+	#curl_setopt($ch, CURLOPT_PROXY, "localhost:8888");
+	
     switch($method)
     {
       case 'POST':
@@ -159,15 +182,16 @@ Class Dropio_Api {
         curl_setopt($ch, CURLOPT_POST, 1);
 
         # For some reason, this needs to be a string instead of an array.
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+		#print(json_encode($params));
         break;
         case 'DELETE':
-          curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
           curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
           break;
         case 'PUT':
           curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-          curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
           curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
           break;
         case 'GET':
@@ -179,12 +203,11 @@ Class Dropio_Api {
           $url = self::UPLOAD_URL;
 
           curl_setopt ($ch, CURLOPT_POST, 1);
-          curl_setopt ($ch, CURLOPT_POSTFIELDS, $params);
+          curl_setopt ($ch, CURLOPT_POSTFIELDS, json_encode($params));
           break;
       }
 
-        //echo $url;print_r($params); echo "\n";
-
+        
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
@@ -192,7 +215,6 @@ Class Dropio_Api {
       throw new Dropio_Api_Exception ('Curl Error:' . curl_error($ch));
 
     $http_response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
     if (in_array($http_response_code, Array(200,400,403,404)) && is_array( $data = @json_decode( $result, true)))
     {
       if (isset($data['response']['result']) && $data['response']['result'] == 'Failure')
@@ -201,8 +223,8 @@ Class Dropio_Api {
       }
       return $data;
     }
-
-    throw new Dropio_Api_Exception('Received error code from web server:' . $http_response_code,$http_response_code);
+	#print("Raw curl response: " . $data);
+    throw new Dropio_Api_Exception('Received error code from web server:' . $http_response_code . ' result: ' . $result,$http_response_code);
   }
 
   /**
@@ -233,7 +255,27 @@ Class Dropio_Api {
     return new Dropio_Api($api_key,$api_secret);
   }
 
+  /**
+	*	Request conversion. 
+	*	Because a conversion can act on many input and output assets, 
+	*	it is not part of the asset class
+	*/
 	
+  public function convert($asset_type, $inputs, $outputs, $using = null, $pingback_url = null){
+	//There can be multiple inputs and multiple outputs, so we should
+	//ensure that inputs and outputs are both an array of arrays.
+	$inputs = is_array($inputs[0]) ? $inputs : array($inputs);
+	$outputs = is_array($outputs[0]) ? $outputs : array($outputs); 
+	$params = array(
+		'inputs' => $inputs,
+		'outputs' => $outputs,
+		'job_type' => $asset_type
+	);
+	if(!empty($using)) { $params['using'] = $using; }
+	if(!empty($pingback_url)) { $params['pingback_url'] = $pingback_url; }
+	return $this->request('POST','jobs', $params);
+  }
+
   public function getApiKey() { return $this->_api_key; }
   public function getApiSecret() { return $this->_api_secret; }
 }

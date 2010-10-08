@@ -52,10 +52,22 @@ Class Dropio_Drop extends Dropio_Api {
    */
   private function prepareUpdate()
   {
-    return array(
-      'name'        => $this->getName(),
-      'description' => $this->getDescription()
-    );
+	$dropOptions = array();
+	$name = $this->getName();
+	$description = $this->getDescription();
+	$max_size = $this->getMaxSize();
+	$email_key = $this->getEmailKey();
+	$chat_password = $this->getChatPassword();
+	
+	#include each option only if it is set.
+	if(!empty($name)){ $dropOptions['name'] = $name; }
+	if(!empty($description)){ $dropOptions['description'] = $description; }
+	if(!empty($max_size)){ $dropOptions['max_size'] = $max_size; }
+	if(!empty($email_key)){ $dropOptions['email_key'] = $email_key; }
+	if(!empty($chat_password)){ $dropOptions['chat_password'] = $chat_password; }
+	
+	#return the dropOptions array to the call
+	return $dropOptions;
   }
 
   /**
@@ -65,15 +77,8 @@ Class Dropio_Drop extends Dropio_Api {
   {
     # If _is_loaded is false, the drop is new. Otherwise update
     if (!$this->_is_loaded) {
-      
-      # If the name is null, create a random drop.
-      if ($this->getName() == NULL) { 
-          $result = $this->request('POST', 'drops', array('expiration_length'=>'1_YEAR_FROM_LAST_VIEW'));
-      } else {
-          $result = $this->request('POST', 'drops', array('name'=>$this->getName(),'expiration_length'=>'1_YEAR_FROM_LAST_VIEW'));
-      }
+      $result = $this->request('POST', 'drops', $this->prepareUpdate());
       $this->_is_loaded = true;
-      
     } else {
       $result = $this->request('PUT', 'drops/' . $this->_origName, $this->prepareUpdate());
     }
@@ -133,7 +138,7 @@ Class Dropio_Drop extends Dropio_Api {
       $input .= "<input type=\"hidden\" name=\"$k\" value=\"$v\"/>\n";
 
     $html = <<<EOF
-    <form action="http://assets.drop.io/upload" method="post" enctype="multipart/form-data">
+    <form action="http://drop.io/upload" method="post" enctype="multipart/form-data">
       <ul>
         <li>
           <label for="file">Add a new file:</label>
@@ -180,7 +185,9 @@ EOF;
     );
     
     # Process the optional parameters
-    foreach ($options as $k => $v) { $params[$k] = $v; }
+    if (!($options == NULL)) {
+      foreach ($options as $k => $v) { $params[$k] = $v; }
+    }
 
     $params = $this->_signIfNeeded($params);
 
@@ -226,10 +233,13 @@ EOL;
    * @param <type> $dropname
    * @return <type>
    */
-  public function createDrop($dropname,$expires='1_YEAR_FROM_LAST_VIEW')
+  public function createDrop($name, $max_size=null, $description=null, $email_key=null, $chat_password=null)
   {
-    return $this->setName($dropname)->
-            setExpirationLength($expires)->
+    return $this->setName($name)->
+            setMaxSize($max_size)->
+			setDescription($description)->
+			setEmailKey($email_key)->
+			setChatPassword($chat_password)->
             save();
   }
 
@@ -254,9 +264,11 @@ EOL;
   public function getCurrentBytes()   { return $this->_values['current_bytes']; }
   public function getDescription()    { return @$this->_values['description']; }
   public function getEmail()          { return $this->_values['email']; }
-  public function getExpirationLength() { return $this->_values['expiration_length']; }
-  public function getExpiresAt()      { return $this->_values['expires_at']; }
+  public function getEmailKey()       { return $this->_values['email_key']; }
   public function getMaxBytes()       { return $this->_values['max_bytes']; }
+  public function getMaxSize()        { 
+	return (!empty($this->_values['max_size']) ? $this->_values['max_size'] : $this->_values['max_bytes'] / 1024 / 1024); 
+  }
   public function getName()           { return $this->_values['name']; }
 
   /**
@@ -265,7 +277,7 @@ EOL;
    * @param string A description of the drop.
    */
   public function setDescription($description) {
-    $this->_values['description'] = $description;
+    if(!empty($description)){ $this->_values['description'] = $description; }
     return $this;
   }
 
@@ -276,11 +288,30 @@ EOL;
    */
   public function setName($name)
   {
-    $this->_values['name'] = $name;
-
-    # Set the original name if it has not yet been set
-    $this->_origName = (is_null($this->_origName)) ? $name : $this->_origName;
+    if(!empty($name)){ 
+		$this->_values['name'] = $name;
+		# Set the original name if it has not yet been set
+		$this->_origName = (is_null($this->_origName)) ? $name : $this->_origName; 
+	}
     return $this;
+  }
+
+  public function setMaxSize($max_size=null)
+  {
+	  //default to a petabyte - 1073741824 megs. Pratically, this is 'unlimited'
+	  $max_size = (empty($max_size) ? 1073741824 : $max_size); 
+      $this->_values['max_size'] = $max_size;
+      return $this;
+  }
+
+  public function setEmailKey($email_key=null){
+	if(!empty($email_key)){ $this->_values['email_key']; }
+	return $this;
+  }
+
+  public function setChatPassword($chat_password=null){
+	if(!empty($chat_password)){ $this->_values['chat_password']; }
+	return $this;
   }
 
 
@@ -407,14 +438,6 @@ EOL;
     return $this->_is_loaded;
   }
 
-  /**
-   *
-   * @param enum $length
-   * @return mexed
-   */
-  public function setExpirationLength($length='1_YEAR_FROM_LAST_VIEW')
-  {
-      $this->_values['expiration_length'] = $length;
-      return $this;
-  }
+
+  
 }
