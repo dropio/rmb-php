@@ -1,7 +1,7 @@
 
 <?php
 
-class LinkRole extends Role
+class LinkRole extends Rmb_Role
 {
     public function getUrl() { return $this->values['url']; }
     

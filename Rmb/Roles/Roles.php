@@ -7,7 +7,7 @@ Interface RoleType
 
 }
 
-Abstract Class Role Implements RoleType
+Abstract Class Rmb_Role Implements RoleType
 {
     
     const DEF_LOCATION  = 'DropioS3';

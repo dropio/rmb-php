@@ -1,6 +1,6 @@
 <?php
 
-class DocumentRole extends Role
+class DocumentRole extends Rmb_Role
 {
 
     public function getPages() { return $this->values['pages']; }

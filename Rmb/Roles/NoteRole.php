@@ -1,6 +1,6 @@
 <?php
 
-class NoteRole extends Role
+class NoteRole extends Rmb_Role
 {
     public function getContents() { return $this->values['contents']; }
 

@@ -1,6 +1,6 @@
 <?php
 
-class AudioRole extends Role
+class AudioRole extends Rmb_Role
 {
     public function getDuration() { return $this->values['duration']; }
     public function getArtist()   { return $this->values['artist']; }

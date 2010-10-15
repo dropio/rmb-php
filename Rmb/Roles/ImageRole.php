@@ -1,7 +1,7 @@
 
 <?php
 
-class ImageRole extends Role
+class ImageRole extends Rmb_Role
 {
 
     public function getHeight() { return $this->values['height']; }

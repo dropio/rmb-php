@@ -1,7 +1,7 @@
 
 <?php
 
-class MovieRole extends Role
+class MovieRole extends Rmb_Role
 {
     public function getDuration() { return $this->values['duration']; }
 
