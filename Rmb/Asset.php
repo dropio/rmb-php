@@ -10,7 +10,7 @@ include_once(dirname(__FILE__) . '/Roles/OtherRole.php');
 include_once(dirname(__FILE__) . '/Roles/LinkRole.php');
 include_once(dirname(__FILE__) . '/Roles/NoteRole.php');
 
-Class Dropio_Asset extends Dropio_Api {
+Class Rmb_Asset extends Rmb_Api {
   /**
    *
    * @var <type> The name of the drop owning the asset
@@ -36,11 +36,11 @@ Class Dropio_Asset extends Dropio_Api {
    *
    * @param <type> $api_key
    * @param <type> $api_secret
-   * @return Dropio_Asset
+   * @return Rmb_Asset
    */
   public static function getInstance($api_key=null,$api_secret=null)
   {
-    return new Dropio_Asset($api_key, $api_secret);
+    return new Rmb_Asset($api_key, $api_secret);
   }
 
   /**
@@ -142,7 +142,7 @@ Class Dropio_Asset extends Dropio_Api {
 
   /**
    *
-   * @link http://backbonedocs.drop.io/Create-a-Note
+   * @link http://docs.rmb.io/Create-a-Note
    *
    * @param <type> $content
    * @param <type> $options
@@ -166,7 +166,7 @@ Class Dropio_Asset extends Dropio_Api {
 
   /**
    *
-   * @param string $url     The url drop.io will download
+   * @param string $url     The url the RMB will download
    * @param mixed  $options optional parameters
    * @return <type>
    */
@@ -214,7 +214,7 @@ Class Dropio_Asset extends Dropio_Api {
   }
 
   /**
-   * Upload a file to drop.io
+   * Upload a file to the RMB
    *
    * required: drop_name, file
    * optional: comment, description, redirect_to, convert_to, ouput_locations, pingback_url
@@ -248,7 +248,7 @@ Class Dropio_Asset extends Dropio_Api {
   /**
    * Delete an asset
    *
-   * @link http://backbonedocs.drop.io/Delete-an-Asset
+   * @link http://docs.rmb.io/Delete-an-Asset
    * @return mixed
    */
   public function delete()

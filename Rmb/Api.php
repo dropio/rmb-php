@@ -1,15 +1,15 @@
 <?php
 
-Class Dropio_Exception extends Exception {};
-Class Dropio_Api_Exception extends Dropio_Exception {};
+Class Rmb_Exception extends Exception {};
+Class Rmb_Api_Exception extends Rmb_Exception {};
 
-Class Dropio_Api {
+Class Rmb_Api {
 
   const RESPONSE_FORMAT  = 'json';
   const API_VERSION      = '3.0';
-  const API_URL          = 'api.drop.io';
+  const API_URL          = 'api.rmb.io';
   const CLIENT_VER       = '1.0';
-  const UPLOAD_URL       = 'http://assets.drop.io/upload';
+  const UPLOAD_URL       = 'http://u.rmb.io/upload';
 
   private $_api_key      = null;
   private $_api_secret   = null;
@@ -24,7 +24,7 @@ Class Dropio_Api {
 
   public function __construct($key=null,$secret=null) {
     if(is_null($key))
-        throw new Dropio_Api_Exception('You must set an API key.');
+        throw new Rmb_Api_Exception('You must set an API key.');
     $this->_api_key    = $key;
     $this->_api_secret = $secret;
   }
@@ -169,7 +169,7 @@ Class Dropio_Api {
 	$ch = curl_init();
 
     # Setting the user agent, useful for debugging and allowing us to check which version
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Drop.io PHP client v' . self::CLIENT_VER);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'RMB PHP client v' . self::CLIENT_VER);
     curl_setopt($ch, CURLOPT_TIMEOUT, 0);
 	curl_setopt($ch, CURLOPT_VERBOSE, true); // Display communication with server
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-Type: application/json'));
@@ -212,19 +212,19 @@ Class Dropio_Api {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
     if ( ( $result = curl_exec($ch) ) === false )
-      throw new Dropio_Api_Exception ('Curl Error:' . curl_error($ch));
+      throw new Rmb_Api_Exception ('Curl Error:' . curl_error($ch));
 
     $http_response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     if (in_array($http_response_code, Array(200,400,403,404)) && is_array( $data = @json_decode( $result, true)))
     {
       if (isset($data['response']['result']) && $data['response']['result'] == 'Failure')
       {
-        throw new Dropio_Api_Exception ($data['response']['message']);
+        throw new Rmb_Api_Exception ($data['response']['message']);
       }
       return $data;
     }
 	#print("Raw curl response: " . $data);
-    throw new Dropio_Api_Exception('Received error code from web server:' . $http_response_code . ' result: ' . $result,$http_response_code);
+    throw new Rmb_Api_Exception('Received error code from web server:' . $http_response_code . ' result: ' . $result,$http_response_code);
   }
 
   /**
@@ -252,7 +252,7 @@ Class Dropio_Api {
   */
   public static function getInstance($api_key,$api_secret=null)
   {
-    return new Dropio_Api($api_key,$api_secret);
+    return new Rmb_Api($api_key,$api_secret);
   }
 
   /**

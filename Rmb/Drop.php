@@ -4,24 +4,24 @@
 include_once(dirname(__FILE__) . '/Api.php');
 include_once(dirname(__FILE__) . '/Asset.php');
 
-Class Dropio_Drop_Exception extends Dropio_Exception{};
+Class Rmb_Drop_Exception extends Rmb_Exception{};
 
 /**
- * Dropio_Drop is used to access all functionality related to a Drop.  Most 
+ * Rmb_Drop is used to access all functionality related to a Drop.  Most 
  * methods are chainable, allowing for the the creation of a drop to happen
  * inline.  
  * 
  * For example, to create a drop and to access it.
  * 
- * $drop = Dropio_Drop::getInstance($API_KEY)->save();
+ * $drop = Rmb_Drop::getInstance($API_KEY)->save();
  * 
  * To load a pre-existing drop and load:
  * 
- * $drop = Dropio_Drop::load('dropname');
+ * $drop = Rmb_Drop::load('dropname');
  * 
  */
 
-Class Dropio_Drop extends Dropio_Api {
+Class Rmb_Drop extends Rmb_Api {
 
   private $_origName = null;
   private $_token    = null;
@@ -91,7 +91,7 @@ Class Dropio_Drop extends Dropio_Api {
   /**
    * Delete a drop and all its contents
    *
-   * @link http://backbonedocs.drop.io/Delete-a-Drop
+   * @link http://docs.rmb.io/Delete-a-Drop
    * @return mixed
    */
   public function delete($drop_name=null)
@@ -138,7 +138,7 @@ Class Dropio_Drop extends Dropio_Api {
       $input .= "<input type=\"hidden\" name=\"$k\" value=\"$v\"/>\n";
 
     $html = <<<EOF
-    <form action="http://drop.io/upload" method="post" enctype="multipart/form-data">
+    <form action="http://up.rmb.io/upload" method="post" enctype="multipart/form-data">
       <ul>
         <li>
           <label for="file">Add a new file:</label>
@@ -229,7 +229,7 @@ EOL;
   /**
    * Create a drop
    *
-   * @link http://backbonedocs.drop.io/Create-a-Drop
+   * @link http://docs.rmb.io/Create-a-Drop
    * @param <type> $dropname
    * @return <type>
    */
@@ -248,11 +248,11 @@ EOL;
    *
    * @param <type> $api_key
    * @param <type> $api_secret
-   * @return Dropio_Api
+   * @return Rmb_Api
    */
   public static function getInstance($api_key=null,$api_secret=null)
   {
-    return new Dropio_Drop($api_key, $api_secret);
+    return new Rmb_Drop($api_key, $api_secret);
   }
 
   /**
@@ -331,7 +331,7 @@ EOL;
     # Loop over each asset in the drop and create a pre-loaded object
     foreach($assets['assets'] as $a)
     {
-      $arr = new Dropio_Asset($this->getApiKey(),$this->getApiSecret());
+      $arr = new Rmb_Asset($this->getApiKey(),$this->getApiSecret());
       $arr->setName($a['name'])
         ->setDropName($this->getName())
         ->setValues($a)
@@ -366,7 +366,7 @@ EOL;
     $result = $this->request('GET', 'drops/' . $this->getName() . "/assets/$asset_name",array());
 
     # TODO - move this to a helper method
-    $arr = new Dropio_Asset($this->getApiKey(),$this->getApiSecret());
+    $arr = new Rmb_Asset($this->getApiKey(),$this->getApiSecret());
     $arr->setName($result['name'])
         ->setDropName($this->getName())
         ->setValues($result)
