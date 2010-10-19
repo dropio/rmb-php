@@ -97,7 +97,7 @@ Class Rmb_Api {
   protected function _addRequiredParams($params = null)
   {
 	  date_default_timezone_set('America/New_York');
-      $params['timestamp'] = strtotime('now + 15 minutes');
+      $params['timestamp'] = (string) strtotime('now + 15 minutes');
       return $params;
   }
 
@@ -106,21 +106,21 @@ Class Rmb_Api {
     $str='';
     $this->ksortTree($params);
 	
-	#for GET and DELETE calls, all values are interpreted as strings, so convert them
-	#before we JSON encode them. 
-	if($method == "GET" || $method == "DELETE"){ 
-   		foreach($params as $k=>$v){
-	        $params[$k]=(string)$v;
+		#for GET and DELETE calls, all values are interpreted as strings, so convert them
+		#before we JSON encode them. 
+		if($method == "GET" || $method == "DELETE"){ 
+	   	foreach($params as $k=>$v){
+		  	$params[$k]=(string)$v;
+			}
 		}
-	}
-	//print "\r\n Pingback url is: " . $params["pingback_url"];	
-	$str = json_encode($params);
-	//The ruby to_json does not add backslashes to slashes
-	$str = stripslashes($str);
-	#Debugging output
-	//print("\r\nstring to sign was: " . $str . $this->_api_secret .  "\r\n\r\n");
+		//print "\r\n Pingback url is: " . $params["pingback_url"];	
+		$str = json_encode($params);
+		//The ruby to_json does not add backslashes to slashes
+		$str = stripslashes($str);
+		#Debugging output
+		//print("\r\nstring to sign was: " . $str . $this->_api_secret .  "\r\n\r\n");
 	
-	#add the signature to the params
+		#add the signature to the params
     $params['signature'] = sha1($str . $this->_api_secret);
 	
     return $params;
