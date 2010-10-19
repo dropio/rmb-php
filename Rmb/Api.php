@@ -106,19 +106,15 @@ Class Rmb_Api {
     $str='';
     $this->ksortTree($params);
 	
-		#for GET and DELETE calls, all values are interpreted as strings, so convert them
-		#before we JSON encode them. 
-		if($method == "GET" || $method == "DELETE"){ 
-	   	foreach($params as $k=>$v){
-		  	$params[$k]=(string)$v;
+		#Pass all root params which are not arrays as strings
+ 		foreach($params as $k=>$v){
+			if(!is_array($v)){
+	  		$params[$k]=(string)$v;
 			}
 		}
-		//print "\r\n Pingback url is: " . $params["pingback_url"];	
 		$str = json_encode($params);
-		//The ruby to_json does not add backslashes to slashes
+		//The ruby to_json does not add backslashes to slashes in URLs etc, so match that.
 		$str = stripslashes($str);
-		#Debugging output
-		//print("\r\nstring to sign was: " . $str . $this->_api_secret .  "\r\n\r\n");
 	
 		#add the signature to the params
     $params['signature'] = sha1($str . $this->_api_secret);
