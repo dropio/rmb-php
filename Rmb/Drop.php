@@ -324,9 +324,9 @@ EOL;
    *
    * @return mixed
    */
-  private function loadAssets()
+  private function loadAssets($page = 1)
   {
-    $assets = $this->request('GET', 'drops/' . $this->_origName . '/assets',array());
+    $assets = $this->request('GET', 'drops/' . $this->_origName . '/assets',array("page"=>$page));
 
     # Loop over each asset in the drop and create a pre-loaded object
     foreach($assets['assets'] as $a)
@@ -347,10 +347,10 @@ EOL;
    *
    * @return <type>
    */
-  public function getAssets()
+  public function getAssets($page = 1)
   {
     if (empty($this->_assets))
-      $this->loadAssets();
+      $this->loadAssets($page);
 
     return $this->_assets;
   }
